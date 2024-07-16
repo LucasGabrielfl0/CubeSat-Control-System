@@ -13,7 +13,7 @@ def LogData(time_data_, y1_control, y2_ref, y3_response):
     HEADER = ['Time', 'Control Signal', 'Reference','Response']
     
     #Save data in a .csv file
-    with open('CubeSat-Control-System/Telemetry-System/Data_Logging/EXPERIMENTAL_DATA.csv', 'w', encoding='UTF8', newline='') as f:
+    with open('Telemetry-System/Data_Logging/EXPERIMENTAL_DATA.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)      #
         writer.writerow(HEADER)     #
         

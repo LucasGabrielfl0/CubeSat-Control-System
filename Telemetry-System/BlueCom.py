@@ -6,7 +6,6 @@
  # This file contains the code for the communication between a esp32 and a PC via Bluetooth
  # 
 import numpy as np
-# import bluetooth
 
 
 

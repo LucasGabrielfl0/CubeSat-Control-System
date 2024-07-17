@@ -1,4 +1,4 @@
-/*================================================ CUBESAT CONTROL SYSTEM ================================================*/
+/*==================================================== CUBESAT CONTROL SYSTEM ====================================================*/
 /***
  * Lucas Gabriel Ferreira Lima (LucasGabrielfl0)
  * Electrical Engineering Department (DEE)
@@ -16,8 +16,8 @@
 
 
 /*================================ CONSTRUCTORS ================================*/
-PID::PID(float _kp, float _ki, float _kd, float _ts)
-    :Kp{_kp}, Ki{_ki}, Kd{_kd}, Ts{_ts} {}
+PID::PID(float _kp, float _ki, float _kd, float _tf, float _ts)
+    :Kp{_kp}, Ki{_ki}, Kd{_kd}, Tf{_tf}, Ts{_ts} {}
 
 
 /*================================ METHODS ================================*/

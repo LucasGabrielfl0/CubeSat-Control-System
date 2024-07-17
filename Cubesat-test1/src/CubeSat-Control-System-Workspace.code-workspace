@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"name": "Cubesat-test1",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}

@@ -6,6 +6,8 @@ clc
 clear
 s=tf('s');
 
+
+
 % T = 1 ms, Ts= 1.5s
 % Systems Plant [Model]
 

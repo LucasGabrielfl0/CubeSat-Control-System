@@ -43,7 +43,7 @@ def update_plot(frame, frame_times):
 
 
     frame_times[frame] = time.perf_counter()
-    print("Time: ",time_data[frame],"  volt: ",y3_Response[frame])
+    # print("Time: ",time_data[frame],"  volt: ",y3_Response[frame])
 
     # Updates the lines of the Graph
     line1_Control.set_data(time_data     , y1_Control)

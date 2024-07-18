@@ -1,9 +1,9 @@
 import numpy as np
 import re
 import serial
-
+import time
 #=========================================== COMMUNICATION SETUP ===========================================#
-PC_PORT = 'COM7'
+PC_PORT = 'COM10'
 BAUD_RATE = 9600
 
 ser= serial.Serial(PC_PORT, BAUD_RATE)
@@ -17,12 +17,12 @@ def NewArrays():
     return time_data, y1, y1, y1, start_time
 
 # Read Data from serial port and stores it's values in the array
-# message example:'[CAN]: | TIME: 500.12 | PWM= 100.11% |  RPM= 300 | Vs=301.45 V | Ic= 200 A |  Tm= 20 °C | Tc= 21 °C'
+# message example:'[Cubesat]: Time: 1000.00 ms | Angle: 10.00 ° | Setpoint: 20.00° | Dutycycle: 50.00%'
 def ReadSerial(start_time, time_data, y1_control, y2_ref, y3_response):
     # Keeps reading until finds right msg
     while True:
-        Stm32_Data= ser.readline().decode('utf8')           # Read Serial  
-        Data_Array=re.findall(r"[\d.]+", Stm32_Data)        # Get only the numbers from serial data
+        ESP32_Data= ser.readline().decode('ascii')           # Read Serial  
+        Data_Array=re.findall(r"[\d.]+", ESP32_Data)        # Get only the numbers from serial data
         
         if Data_Array:      # Only goes out of the loop if reads something
             break        
@@ -30,9 +30,9 @@ def ReadSerial(start_time, time_data, y1_control, y2_ref, y3_response):
     
     # Get Current Values for each variable
     time_c      = float(Data_Array[0])
-    control_c   = float(Data_Array[1])
+    response_c  = float(Data_Array[1])
     ref_c       = float(Data_Array[2])
-    response_c  = float(Data_Array[3])
+    control_c   = float(Data_Array[3])
 
     time_c   = time_c - start_time
 

@@ -6,8 +6,12 @@ clc
 clear
 s=tf('s');
 
+a1=readmatrix('Experimental_data\Data.csv');
+a1=-a1;
+time=0:1:4524;
+time=reshape(time,4525,1);
 
-
+plot(time, a1)
 % T = 1 ms, Ts= 1.5s
 % Systems Plant [Model]
 

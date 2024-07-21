@@ -12,13 +12,13 @@ import numpy as np
 CONTROL_MAX     =   110     # Maximum value of the control signal
 RESPONSE_MAX    =   120     # Maximum value of the systems Response
 RESPONSE_MIN    =   -120    # Minimum value of the systems Response
-XLIM_MAX        =   1000    # Maximum value of the time axys (in the initial plot)
+XLIM_MAX        =   6000    # Maximum value of the time axys (in the initial plot)
 
 # Ticks
 TICK_CONTROL    =   25
 TICK_RESPONSE   =   30
 
-MAX_FRAMES      =   4000    # Maximum number of points in the graph before reseting
+MAX_FRAMES      =   6000    # Maximum number of points in the graph before reseting
 LINE_WEIGTH     =   2       # Line weight
 
 #------------------------------------------------- LINE/FIGURE SETTINGS ----------------------------------------------#
@@ -53,7 +53,7 @@ def create_figure():
     ax2_Response.set_xlim(0,XLIM_MAX)
     ax2_Response.set_title('Angle')
     ax2_Response.set_ylabel('Degrees [°]')
-    ax2_Response.set_xlabel('time [s]')
+    ax2_Response.set_xlabel('time [ms]')
     ax2_Response.set_yticks(np.arange(RESPONSE_MIN, RESPONSE_MAX+1,TICK_RESPONSE))
     ax2_Response.grid(True)
     ax2_Response.legend([line2_Ref, line3_Response], ['Reference', 'Response'], loc="upper left")    

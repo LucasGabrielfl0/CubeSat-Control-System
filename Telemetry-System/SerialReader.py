@@ -3,8 +3,8 @@ import re
 import serial
 import time
 #=========================================== COMMUNICATION SETUP ===========================================#
-PC_PORT = 'COM10'
-BAUD_RATE = 9600
+PC_PORT = 'COM13'
+BAUD_RATE = 115200
 
 ser= serial.Serial(PC_PORT, BAUD_RATE)
 

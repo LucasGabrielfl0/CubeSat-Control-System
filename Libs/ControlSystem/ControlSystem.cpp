@@ -10,23 +10,36 @@
 
  ***/
 
-#include "ControlSystems.h"
-#define DC_MAX 100
-#define DC_MIN 0
+#include "ControlSystem.h"
 
+
+/*================================= METHODS  =================================*/
+
+void insideTask(){
+    //while 1
+    // get angle?
+    // setPWM(GetDc());
+
+}
+void insideTask2(){
+    //while 1
+    // send shit via bluetooth
+    // send shit
+
+}
 
 /*================================ CONSTRUCTORS ================================*/
-PID::PID(float _kp, float _ki, float _kd, float _tf, float _ts)
+ControlSystem::ControlSystem(float _kp, float _ki, float _kd, float _tf, float _ts)
     :Kp{_kp}, Ki{_ki}, Kd{_kd}, Tf{_tf}, Ts{_ts} {}
 
 
 /*================================ METHODS ================================*/
-float PID::control(){
+float ControlSystem::control(){
     float setpoint, out, u_kp, u_ki, u_kd;
     float output, Dc;
 
-    // Error
-    error_c= out - setpoint;
+    error_c= out - setpoint;    // Current Error
+    Dc =error_c*Kp;                      // PIDF Equation
 
     // Proportional Control
     u_kp= Kp*error_c;

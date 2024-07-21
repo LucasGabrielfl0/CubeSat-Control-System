@@ -20,12 +20,14 @@ plt.style.use(matplotx.styles.dracula)
 from CSVDatalogger import *     # Logs data in .CSV   
 from PlotSettings import *      # Figure Settings
 from SineTest import *          # Test Mode (plot without Bluetooth)
-from BlueCom import *           # Bluetooth Communicaiton with ESP32
+from SerialReaderTimeless import *
+# from BlueCom import *           # Bluetooth Communicaiton with ESP32
 
-TEST_MODE = True
+
+TEST_MODE = False
 if TEST_MODE:
     NewArrays = NewArraysTest
-    ReadBlue = ReadTest
+    ReadSerial = ReadTest
 
 #------------------------------------------------- PLOT UPDATE: BLITING + AUTO AXYS ----------------------------------------------#
 # Animated Plot
@@ -34,7 +36,7 @@ def update_plot(frame, frame_times):
     global y1_Control, y2_Ref, y3_Response
 
     # Update Values
-    time_data, y1_Control, y2_Ref, y3_Response, start_time = ReadBlue(time_data, y1_Control, y2_Ref, y3_Response, start_time)
+    time_data, y1_Control, y2_Ref, y3_Response, start_time = ReadSerial(time_data, y1_Control, y2_Ref, y3_Response, start_time)
     
     # If the Time array doesnt start from zero, sets the start time
     if time_data[0]>0:
@@ -43,7 +45,7 @@ def update_plot(frame, frame_times):
 
 
     frame_times[frame] = time.perf_counter()
-    # print("Time: ",time_data[frame],"  volt: ",y3_Response[frame])
+    print("Time: ",time_data[frame],"  Response: ",y3_Response[frame])
 
     # Updates the lines of the Graph
     line1_Control.set_data(time_data     , y1_Control)
@@ -75,6 +77,7 @@ def update_plot(frame, frame_times):
 
 
 #================================================ MAIN ================================================#
+print("[Telemetry System]: Communication started")
 time_data, y1_Control, y2_Ref, y3_Response, start_time = NewArrays()
 fig, ax1_control, ax2_Response, titl, line1_Control ,line2_Ref, line3_Response = create_figure()
 

@@ -6,7 +6,7 @@
  * Main file for the Cubesat Attitude control system
  ***/
 
-#include <Arduino.h>
+// #include <Arduino.h>
 #include <ControlSystem.h>
 /*===================================== CONTROL PARAMETERS =====================================*/
 //Gains
@@ -28,8 +28,8 @@ ControlSystem PIDController(KP,KI,KD,TF,TS);
 
 
 // Sends data to the telemetry system every 1 ms
-Telemetry(float angle,float setpoint, float Dc);
-
+// Telemetry(float angle,float setpoint, float Dc);
+// vtask
 // Control System every 1 ms
 
 /*===================================== SETUP =====================================*/

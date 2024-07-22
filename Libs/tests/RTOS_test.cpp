@@ -11,33 +11,41 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#include <MPU6050_Dark.h>           // Angle Sensor [Modified from MPU6050_Light]
-#include <MotorControl.h>           // Dc Motor control [Personal]
-#include <ControlSystem.h>          // Control System [Personal]
+
+
+#include <MPU6050_Dark.h>           // Angle Sensor
+#include <MotorControl.h>           // Dc Motor control
+// #include <ControlSystem.h>       // Control System
 // #include <BlueSerial.h>          // ??
+
+/*===================================== CONTROL PARAMETERS =====================================*/
+//Gains
+#define KP	1     	// Proporcional Gain
+#define KI  1     	// Integral Gain
+#define KD  1     	// Derivative Gain
+#define TF  1		// Time constant of the Filter in the derivative gain 
 
 #define INTERNAL_LED    2 
 
+#define TS  1e-3	// Sampling time in sec
 
-/*==================================== OBJECTS ====================================*/
+
+/* OBJECTS */
 MPU6050 mpu(Wire);                      // Angle Sensor
 BluetoothSerial Blue;                   // Communication
-ControlSystem PIDController;            // Control systems
+// ControlSystem PIDController();          // Control systems
 MotorControl motor;                     // Motor/Hbridge control
 
-
-/*==================================== GLOBAL VARIABLES ====================================*/
-int Setpoint{0};                    // Angle setpoint in Degrees [°]1
+/* GLOBAL VARIABLES */
+int Setpoint{0};                    // Angle setpoint in Degrees [°]
 float AngleZ{0};                    // Currente Angle value of the cubesat in Degrees [°]
 float DutyC{0};                     // DutyCycle of the PWM sent to the motor
-float Error{0};                     // Error value;
 uint8_t Dc_8b{0};                   // DutyCycle value in 8bits [0 to 255]
 uint8_t SetpointFlag{1};            //
 
-// Telemetry
 char InMessage;                     //                     
 
-// Time counter
+// counter
 uint32_t StartTime = millis();      //
 uint32_t TimeCounter{0};            //
 
@@ -45,7 +53,7 @@ uint32_t TimeCounter{0};            //
 /* AUX FUNCTIONS */
 // Bluetooth
 void Setup_blue();
-void TelemetryData(uint32_t timestamp, float angle, float setpoint, float dutyc);
+void SendData(float angle, float setpoint, float dutyc);
 void TerminalCom();         // Sets communication via Terminal
 void TerminalCom2();        // Sets communication via Terminal
 void LED_setup();           // LED Setup
@@ -55,29 +63,35 @@ void LED_setup();           // LED Setup
 // Control system
 void taskControl(void * params){
     while (true){
-        // AngleZ = mpu.readAngleZ();
-        // DutyC = PidController.control(AngleZ, Setpoint);
-        // motor.setPWM(DutyC);
-        vTaskDelay(1e3/portTICK_PERIOD_MS);   //Executes every 1ms
+    TimeCounter = millis() - StartTime;
+    // Setpoint goes: =>0 =>90 => 0 => -90 => 0 .... every 6s
+    // if(TimeCounter==6e3 or TimeCounter==12e3){
+    //     if (Setpoint == 0){
+    //         Setpoint = 90*SetpointFlag;
+    //         SetpointFlag = -1*SetpointFlag;
+    //     }
+    //     else{
+    //         Setpoint =0;
+    //     }
+    // }
+
+    if(TimeCounter>=12e3){
+        StartTime = millis();
+    }
+
+    Serial.println(TimeCounter);
+    // AngleZ = mpu.readAngleZ();
+    // DutyC = PidController.control(AngleZ, Setpoint);
+    // motor.setPWM(DutyC);
+    vTaskDelay(1e3/portTICK_PERIOD_MS);   //Executes every 1ms
     }
 }
 
 // Telemetry data sent to the PC
 void taskTelemetry(void * params){
     while (true){
-        TimeCounter = millis() - StartTime;
-        // Setpoint goes: =>0 =>90 => 0 => -90 => 0 .... every 6s
-        if(TimeCounter>=6e3 && Setpoint==0){
-            Setpoint = 90*SetpointFlag;            
-        }
-        if(TimeCounter>=12e3) {
-            StartTime = millis();
-            Setpoint = 0;
-            SetpointFlag *= -1;
-        }
-        TelemetryData(TimeCounter , AngleZ ,Setpoint , DutyC);      // Send data to be plotted on PC 
-        Serial.println(TimeCounter);                                // Serial Print of time
-        vTaskDelay(1e3/portTICK_PERIOD_MS);                         //Executes Every 1ms
+        // Serial.println("TimeCounter");
+        vTaskDelay(1/portTICK_PERIOD_MS);   //Executes Every 1ms
     }
 }
 
@@ -93,6 +107,7 @@ void taskBlueTerminal(void * params){
 
 /*===================================== SETUP =====================================*/
 void setup() {
+
     /* Systems Setup */
     Serial.begin(115200);
     // Setup_blue();            // Setup of the Bluetooth Communication with the PC
@@ -102,9 +117,9 @@ void setup() {
     // LED_setup();             // LED Setup
     
     /* RTOS TASKs */
-    xTaskCreatePinnedToCore(&taskControl, "ControlSystem", 1024, NULL, 3, NULL, 1);     // Task in core 1
-    xTaskCreate(&taskTelemetry, "TelemetrySystem", 1024, NULL, 2, NULL);                // By default, in core 0
-    xTaskCreate(&taskBlueTerminal, "Terminal", 1024, NULL, 1, NULL);                    // By default, in core 0
+    xTaskCreatePinnedToCore(&taskControl, "ControlSystem", 1024, NULL, 3, NULL, 1);
+    xTaskCreate(&taskTelemetry, "TelemetrySystem", 1024, NULL, 2, NULL);
+    xTaskCreate(&taskBlueTerminal, "Terminal", 1024, NULL, 1, NULL);
 }
 
 /*===================================== MAIN LOOP =====================================*/
@@ -174,6 +189,7 @@ void TerminalCom(){
     }
 
   }
+//   delay(20);
 }
  
 

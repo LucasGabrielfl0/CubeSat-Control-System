@@ -115,18 +115,4 @@ class MPU6050{
 };
 
 
-/*LGFL: CUSTOM */
-void MPU6050::setup(){
-    Wire.begin();                   // Begin I2C comm.
-    upsideDownMounting = true; 		// if the MPU6050 is mounted upside-down
-    calcOffsets(); 					// gyro and accelero
-}
-
-float MPU6050::readAngleZ() {
-  update();                 // Update Angle value
-  return getAngleZ();       // Return angle
-}
-
-
-
 #endif

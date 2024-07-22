@@ -28,24 +28,13 @@
 #define ENB_PIN         5       // Enable PIN for motor 2 [PWM PIN]
 
 
-class MotorControl {
-    /* Atributes */
-    uint8_t IN1_Pin{IN1_PIN};        //
-    uint8_t IN2_Pin{IN2_PIN};        //
-    uint8_t EN_Pin{ENA_PIN};         // [PWM]
+/* Methods */
+void setFoward();           //
+void setReverse();          //
+void shutdown();            //
+void setup();
+void setPWM(float DutyC);   // Set PWM at 
 
-    public:
-    /* Methods */
-    void setFoward();           //
-    void setReverse();          //
-    void shutdown();            //
-    void setup();
-    void setPWM(float DutyC);   // Set PWM at 
-
-    /* Constructors */
-    MotorControl(uint8_t IN1_pin,uint8_t IN2_pin,uint8_t EN_pin );
-    MotorControl();
-};
 
 
 #endif

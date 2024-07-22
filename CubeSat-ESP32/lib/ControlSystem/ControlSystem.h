@@ -42,7 +42,6 @@ class ControlSystem {
     public:
     // Methods:
     void set_Gains(float Kp, float Ki, float Kd, float Tf);
-    void get_Gains();
     float control();
     float control(float angle, float setpoint);
     void OpenLoopStep(float Dc_pwm);                // Apply Step directly into the plant (Open Loop)
@@ -55,7 +54,7 @@ class ControlSystem {
 };
 
 
-float control(float Angle, float Setpoint){
+float ControlSystem::control(float Angle, float Setpoint){
     float Angle1[3]  = {0,0,0};      // Vector for Angle values 0 = current 
     float DC_out1[3] = {0,0,0};      // Vector for Dc values
     float Error1[3]  = {0,0,0};      // Vector for Error

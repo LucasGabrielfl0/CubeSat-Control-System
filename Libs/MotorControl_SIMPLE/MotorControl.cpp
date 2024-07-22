@@ -11,47 +11,41 @@
 #include <Arduino.h>
 
 
-MotorControl::MotorControl(uint8_t IN1_pin_,uint8_t IN2_pin_,uint8_t EN_pin_ )
-:IN1_Pin{IN1_pin_} , IN2_Pin{IN2_pin_} , EN_Pin{EN_pin_} {};
-
 // MotorControl::MotorControl(){
 //     setup(PWM_FREQ, PWM_DC_RES, PWM_CHANEL);
 // };
 
 
-void MotorControl::setFoward(){
+void setFoward(){
     delay(100);
-    digitalWrite(IN1_Pin, HIGH);
-    digitalWrite(IN2_Pin, LOW);
+    digitalWrite(IN1_PIN, HIGH);
+    digitalWrite(IN2_PIN, LOW);
 }
 
-void MotorControl::setReverse(){
+void setReverse(){
     delay(100);
-    digitalWrite(IN1_Pin, LOW);
-    digitalWrite(IN2_Pin, HIGH);
+    digitalWrite(IN1_PIN, LOW);
+    digitalWrite(IN2_PIN, HIGH);
 }
 
-void MotorControl::shutdown(){
+void shutdown(){
     delay(100);
-    digitalWrite(IN1_Pin, LOW);
-    digitalWrite(IN2_Pin, LOW);
+    digitalWrite(IN1_PIN, LOW);
+    digitalWrite(IN2_PIN, LOW);
 }
 
-MotorControl::MotorControl(){}
-
-
-void MotorControl::setup(){
+void setup(){
     // Hbridge Setup, 1 Motor
-    pinMode(IN1_Pin, OUTPUT);   // 
-    pinMode(IN2_Pin, OUTPUT);   //
+    pinMode(IN1_PIN, OUTPUT);   // 
+    pinMode(IN2_PIN, OUTPUT);   //
 
     // Board's PWM set up
-    pinMode(EN_Pin, OUTPUT);                        // PWM pin mode as Output
+    pinMode(ENA_PIN, OUTPUT);                        // PWM pin mode as Output
     ledcSetup(PWM_CHANEL,PWM_FREQ,PWM_DC_RES);      // Chanel, Frequency, and resolution
-    ledcAttachPin(EN_Pin, PWM_CHANEL);              // Pin
+    ledcAttachPin(ENA_PIN, PWM_CHANEL);              // Pin
 }
 
-void MotorControl::setPWM(float DutyC){
+void setPWM(float DutyC){
     uint8_t Dc_8b= uint8_t(abs(DutyC)*255);              // Assuming RES = 8bit
     delay(100);
     
@@ -62,7 +56,7 @@ void MotorControl::setPWM(float DutyC){
     } 
     else{
         setFoward();
-        ledcWrite(PWM_CHANEL, DutyC);
+        ledcWrite(PWM_CHANEL, Dc_8b);
     }
 }
 

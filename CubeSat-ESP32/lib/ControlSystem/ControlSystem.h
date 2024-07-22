@@ -33,7 +33,7 @@ class ControlSystem {
     float Ki{KI};           // Integral Gain
     float Kd{KD};           // Derivative Gain
     float Tf{TF};           // Filter in the Derivative term
-    uint8_t Ts{Ts};         // Sample Time in sec
+    double Ts{TS};         // Sample Time in sec
 
     float Angle_ref{0};     // Reference Angle
     float error_c;          // Current error    
@@ -49,48 +49,9 @@ class ControlSystem {
 
 
     // Constructors:
-    ControlSystem(float _kp, float _ki, float _kd, float _tf, float _ts);
+    ControlSystem(float _kp, float _ki, float _kd, float _tf, double _ts);
     ControlSystem();
 };
-
-
-float ControlSystem::control(float Angle, float Setpoint){
-    float Angle1[3]  = {0,0,0};      // Vector for Angle values 0 = current 
-    float DC_out1[3] = {0,0,0};      // Vector for Dc values
-    float Error1[3]  = {0,0,0};      // Vector for Error
-    float Setpoint{0};              //
-    float Angle, DC_out, Error;
-    
-    /* Error Signal */
-    Error1[0]= Setpoint - Angle;
-
-    /* CONTROL */
-    DC_out=1;
-
-    /* VARIABLE UPDATES */
-    Angle1[2]= Angle1[1];
-    Angle1[1]= Angle1[0];
-
-    Angle1[2]= Angle1[1];
-    Angle1[1]= Angle1[0];
-
-    Angle1[2]= Angle1[1];
-    Angle1[1]= Angle1[0];
-    /* ANTI-WINDUP and SATURATION */
-    //Anti- Windup
-
-    // Saturation
-    if(DC_out>DC_MAX){
-        DC_out = DC_MAX;
-    }
-    if(DC_out<DC_MIN){
-        DC_out = DC_MIN;
-    }
-
-    return DC_out;
-}
-
-
 
 
 #endif

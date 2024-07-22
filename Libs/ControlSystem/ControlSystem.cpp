@@ -12,26 +12,11 @@
 
 #include "ControlSystem.h"
 
-
-/*================================= METHODS  =================================*/
-
-void insideTask(){
-    //while 1
-    // get angle?
-    // setPWM(GetDc());
-
-}
-void insideTask2(){
-    //while 1
-    // send shit via bluetooth
-    // send shit
-
-}
-
 /*================================ CONSTRUCTORS ================================*/
 ControlSystem::ControlSystem(float _kp, float _ki, float _kd, float _tf, float _ts)
     :Kp{_kp}, Ki{_ki}, Kd{_kd}, Tf{_tf}, Ts{_ts} {}
 
+ControlSystem::ControlSystem(){}
 
 /*================================ METHODS ================================*/
 float ControlSystem::control(){

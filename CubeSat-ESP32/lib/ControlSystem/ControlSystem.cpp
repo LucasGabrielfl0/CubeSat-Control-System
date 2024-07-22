@@ -13,7 +13,7 @@
 #include "ControlSystem.h"
 
 /*================================ CONSTRUCTORS ================================*/
-ControlSystem::ControlSystem(float _kp, float _ki, float _kd, float _tf, float _ts)
+ControlSystem::ControlSystem(float _kp, float _ki, float _kd, float _tf, double _ts)
     :Kp{_kp}, Ki{_ki}, Kd{_kd}, Tf{_tf}, Ts{_ts} {}
 
 ControlSystem::ControlSystem(){}
@@ -69,8 +69,7 @@ float ControlSystem::control(float Angle, float Setpoint){
     float Angle1[3]  = {0,0,0};      // Vector for Angle values 0 = current 
     float DC_out1[3] = {0,0,0};      // Vector for Dc values
     float Error1[3]  = {0,0,0};      // Vector for Error
-    float Setpoint{0};              //
-    float Angle, DC_out, Error;
+    float DC_out, Error;
     
     /* Error Signal */
     Error1[0]= Setpoint - Angle;

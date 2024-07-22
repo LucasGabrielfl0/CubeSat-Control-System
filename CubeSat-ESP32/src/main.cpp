@@ -3,7 +3,7 @@
  * Lucas Gabriel Ferreira Lima (git: LucasGabrielfl0)
  * Federal University of Pernambuco (UFPE)
  
- * Main file for the Cubesat Attitude control system
+ * Main file for the Cubesat Attitude Control System
  ***/
 #include <Arduino.h>
 #include "Wire.h"
@@ -12,33 +12,35 @@
 #include "freertos/task.h"
 
 #include <MPU6050_Dark.h>           // Angle Sensor [Modified from MPU6050_Light]
+// #include <BlueSerial.h>             // Bluetooth Communication [Modified from BluetoothSerial]
 #include <MotorControl.h>           // Dc Motor control [Personal]
 #include <ControlSystem.h>          // Control System [Personal]
-// #include <BlueSerial.h>          // ??
 
+/* LED Pins*/
 #define INTERNAL_LED    2 
 
 
+
 /*==================================== OBJECTS ====================================*/
-MPU6050 mpu(Wire);                      // Angle Sensor
-BluetoothSerial Blue;                   // Communication
-ControlSystem PIDController;            // Control systems
-MotorControl motor;                     // Motor/Hbridge control
+MPU6050 mpu(Wire);                  // Angle Sensor
+BluetoothSerial Blue;               // Communication
+ControlSystem PIDController;        // Control systems
+MotorControl motor;                 // Motor/Hbridge control (PWM setup, etc)
 
 
 /*==================================== GLOBAL VARIABLES ====================================*/
-int Setpoint{0};                    // Angle setpoint in Degrees [°]1
+int Setpoint{0};                    // Angle setpoint in Degrees [°]
 float AngleZ{0};                    // Currente Angle value of the cubesat in Degrees [°]
 float DutyC{0};                     // DutyCycle of the PWM sent to the motor
 float Error{0};                     // Error value;
 uint8_t Dc_8b{0};                   // DutyCycle value in 8bits [0 to 255]
-uint8_t SetpointFlag{1};            //
+uint8_t SetpointFlag{1};            // Aux flag used with the setpoint
 
 // Telemetry
 char InMessage;                     //                     
 
 // Time counter
-uint32_t StartTime = millis();      //
+uint64_t StartTime = millis();      //
 uint32_t TimeCounter{0};            //
 
 
@@ -46,8 +48,8 @@ uint32_t TimeCounter{0};            //
 // Bluetooth
 void Setup_blue();
 void TelemetryData(uint32_t timestamp, float angle, float setpoint, float dutyc);
-void TerminalCom();         // Sets communication via Terminal
-void TerminalCom2();        // Sets communication via Terminal
+void TerminalChat();         // Sets communication via Terminal
+void TerminalMotor();        // Sets communication via Terminal
 void LED_setup();           // LED Setup
  
 
@@ -57,15 +59,16 @@ void taskControl(void * params){
     while (true){
         // AngleZ = mpu.readAngleZ();
         // DutyC = PidController.control(AngleZ, Setpoint);
-        // motor.setPWM(DutyC);
-        vTaskDelay(1e3/portTICK_PERIOD_MS);   //Executes every 1ms
+        motor.setPWM(DutyC);
+        vTaskDelay(1/portTICK_PERIOD_MS);   //Executes every 1ms
     }
 }
 
-// Telemetry data sent to the PC
+// Telemetry data sent to the PC [Ts = 1ms]
 void taskTelemetry(void * params){
     while (true){
-        TimeCounter = millis() - StartTime;
+        TimeCounter = millis() - StartTime;     // TimeStamp
+        /* Setpoint Shift*/
         // Setpoint goes: =>0 =>90 => 0 => -90 => 0 .... every 6s
         if(TimeCounter>=6e3 && Setpoint==0){
             Setpoint = 90*SetpointFlag;            
@@ -75,18 +78,20 @@ void taskTelemetry(void * params){
             Setpoint = 0;
             SetpointFlag *= -1;
         }
+        
+        /* Telemetry */
         TelemetryData(TimeCounter , AngleZ ,Setpoint , DutyC);      // Send data to be plotted on PC 
-        Serial.println(TimeCounter);                                // Serial Print of time
-        vTaskDelay(1e3/portTICK_PERIOD_MS);                         //Executes Every 1ms
+        // Serial.println(TimeCounter);                                // Serial Print of time
+        
+        vTaskDelay(1e3/portTICK_PERIOD_MS);                         // Executes Every 1ms
     }
 }
 
-// Get and send data via terminal
+// Get and send data via terminal [Every 20 ms]
 void taskBlueTerminal(void * params){
     while (true){
-        Serial.println("TIME: 20S");
-        Serial.println(millis());
-        vTaskDelay(10e3/portTICK_PERIOD_MS);   //Executes every 20ms
+        TerminalMotor();
+        vTaskDelay(20/portTICK_PERIOD_MS);   //Executes every 20ms
     }
 }
 
@@ -95,14 +100,14 @@ void taskBlueTerminal(void * params){
 void setup() {
     /* Systems Setup */
     Serial.begin(115200);
-    // Setup_blue();            // Setup of the Bluetooth Communication with the PC
+    Setup_blue();            // Setup of the Bluetooth Communication with the PC
     // blue.setup();            // Setup of the Bluetooth Communication with the PC
-    // motor.setup();           // Motor and HBridge related Pins Setup
+    motor.setup();           // Motor and HBridge related Pins Setup
     // mpu.setup();             // Angle Sensor (MPU6050) setup and calibration
     // LED_setup();             // LED Setup
     
     /* RTOS TASKs */
-    xTaskCreatePinnedToCore(&taskControl, "ControlSystem", 1024, NULL, 3, NULL, 1);     // Task in core 1
+    xTaskCreatePinnedToCore(&taskControl, "ControlSystem", 2048, NULL, 3, NULL, 1);     // Task in core 1
     xTaskCreate(&taskTelemetry, "TelemetrySystem", 1024, NULL, 2, NULL);                // By default, in core 0
     xTaskCreate(&taskBlueTerminal, "Terminal", 1024, NULL, 1, NULL);                    // By default, in core 0
 }
@@ -110,6 +115,7 @@ void setup() {
 /*===================================== MAIN LOOP =====================================*/
 void loop() {
     // jack shit
+    // TerminalMotor();
 }
 
 
@@ -120,7 +126,9 @@ void loop() {
 void LED_setup(){
 }      
 
-
+void TelemetryData(uint32_t timestamp, float angle, float setpoint, float dutyc){
+    // send
+}
 
 /* Bluetooth */
 void Setup_blue(){
@@ -135,7 +143,7 @@ void SendData_blue(float angle, float setpoint, float Dutyc){
 }
 
 
-void TerminalCom2(){
+void TerminalChat(){
     if (Serial.available()) {
         Blue.write(Serial.read());
     }
@@ -144,17 +152,21 @@ void TerminalCom2(){
     }
 }
 
-void TerminalCom(){
-  if (Serial.available()) {
-    Blue.write(Serial.read());
-  }
+void TerminalMotor(){
+//   if (Serial.available()) {
+//     Blue.write(Serial.read());
+//   }
   if (Blue.available()) {
     InMessage=(char)Blue.read();
-    Serial.write(InMessage);
+    // Serial.write(InMessage);
     switch (InMessage)
     {
+    /* DutyCycle*/
     case '0':
         DutyC =0;
+        break;
+    case '1':
+        DutyC =0.1;
         break;
     case '2':
         DutyC =0.2;
@@ -167,6 +179,17 @@ void TerminalCom(){
         break;
     case '8':
         DutyC =0.8;
+        break;
+    
+    /* Setpoint */
+    case 'F':
+        Setpoint =90;
+        break;
+    case 'A':
+        Setpoint =-90;
+        break;
+    case 'N':
+        Setpoint =0;
         break;
     
     default:

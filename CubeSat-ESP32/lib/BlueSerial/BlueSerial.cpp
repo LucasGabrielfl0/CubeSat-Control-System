@@ -9,37 +9,31 @@
  ***/
 #include "BlueSerial.h"
 
-// #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-// #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
-// #endif
+/*================================ CONSTRUCTORS ================================*/
+BlueSerial::BlueSerial(){}
 
-void BlueSerial::Setup(){
-    Serial.begin(115200);
-    begin("CUBESAT-ESP32");                         //Bluetooth device name
-    Serial.println("[Bluetooth]: Blue is active");
-    pinMode(INTERNAL_LED, OUTPUT);
+
+/*================================ METHODS ================================*/
+/* SETUP FUNCTION */
+void BlueSerial::setup(){
+    begin("CUBESAT-ESP32");                             //Bluetooth device name
+    Serial.println("[Bluetooth]: Blue is active");      // Initial message
+
+    pinMode(INTERNAL_LED, OUTPUT);                      // LED
     digitalWrite(INTERNAL_LED, HIGH);
 
 }
 
+
+/* PRINT DATA IN BLUETOOTH TERMINAL*/
 void BlueSerial::TelemetryPrint(uint32_t timestamp, float angle, int setpoint, float dutyc){
     // send
     printf("[CUBESAT]: Time: %d | Angle %.2f° | Setpoint: %d | Dc= %.2f\n", timestamp, angle, setpoint, dutyc);
 }
 
 
-void BlueSerial::TerminalChat(){
-    if (Serial.available()) {
-        write(Serial.read());
-    }
-    if (available()) {
-        Serial.write(read());
-    }
-}
-
-
-
-void BlueSerial::GetFromTerminal(float &Setpoint, float &DutyC){
+/* UPDATES VARIABLES FROM BLUETOOTH TERMINAL*/
+void BlueSerial::GetFromTerminal(int &Setpoint, float &DutyC){
     char InMessage;
 //   if (Serial.available()) {
 //     Blue.write(Serial.read());
@@ -86,6 +80,8 @@ void BlueSerial::GetFromTerminal(float &Setpoint, float &DutyC){
   }
 }
 
+
+/* OPENS CHAT TO SEND AND GET DATA*/
 void BlueSerial::TerminalChat(){
     if (Serial.available()) {
         write(Serial.read());
@@ -94,3 +90,4 @@ void BlueSerial::TerminalChat(){
         Serial.write(read());
     }
 }
+

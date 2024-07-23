@@ -13,16 +13,12 @@
 #include "BluetoothSerial.h"
 
 #define INTERNAL_LED    2
-
-void Setup();
-void SendData(float angle, float setpoint, float Dutyc);
-void getData();
  
 class BlueSerial: public BluetoothSerial{
     // Methods
     public:
-    void Setup();
-    void GetFromTerminal(float &Setpoint, float &DutyCycle);
+    void setup();
+    void GetFromTerminal(int &Setpoint, float &DutyCycle);
     void TerminalChat();
     void TelemetryPrint(uint32_t timestamp, float angle, int setpoint, float dutyc);
     void getData();
@@ -30,8 +26,6 @@ class BlueSerial: public BluetoothSerial{
     // Constructor
     BlueSerial(void);
 };
-BlueSerial::BlueSerial(){}
-
 
 
 #endif

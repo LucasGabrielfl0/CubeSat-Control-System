@@ -23,6 +23,18 @@
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
 
+/*==================================== GLOBAL VARIABLES ====================================*/
+int Setpoint{0};                    // Angle setpoint in Degrees [°]
+float AngleZ{0};                    // Currente Angle value of the cubesat in Degrees [°]
+float DutyC{0};                     // DutyCycle of the PWM sent to the motor
+float Error{0};                     // Error value;
+int SetpointFlag{1};                // Aux flag used with the setpoint
+
+// Time counter
+uint64_t StartTime = millis();      // Time of reference in ms
+uint32_t TimeCounter{0};            // Current time value in ms
+
+
 /*==================================== OBJECTS ====================================*/
 MPU6050 mpu(Wire);                  // Angle Sensor
 BlueSerial Blue;                    // Communication
@@ -30,28 +42,9 @@ ControlSystem PIDController;        // Control systems
 MotorControl motor;                 // Motor/Hbridge control (PWM setup, etc)
 
 
-/*==================================== GLOBAL VARIABLES ====================================*/
-int Setpoint{0};                    // Angle setpoint in Degrees [°]
-float AngleZ{0};                    // Currente Angle value of the cubesat in Degrees [°]
-float DutyC{0};                     // DutyCycle of the PWM sent to the motor
-float Error{0};                     // Error value;
-uint8_t Dc_8b{0};                   // DutyCycle value in 8bits [0 to 255]
-int SetpointFlag{1};                // Aux flag used with the setpoint
-
-// Telemetry
-char InMessage;                     //                     
-
-// Time counter
-uint64_t StartTime = millis();      //
-uint32_t TimeCounter{0};            //
 
 
 /* AUX FUNCTIONS */
-// Bluetooth
-void Setup_blue();
-void TelemetryPrint(uint32_t timestamp, float angle, int setpoint, float dutyc);
-void TerminalChat();         // Sets communication via Terminal
-void TerminalMotor();        // Sets communication via Terminal
 void LED_setup();           // LED Setup
  
 
@@ -81,18 +74,16 @@ void taskTelemetry(void * params){
             SetpointFlag *= -1;
         }
         
-        /* Telemetry */
-        TelemetryPrint(TimeCounter , AngleZ ,Setpoint , DutyC);      // Send data to be plotted on PC 
-        // Serial.println(TimeCounter);                                // Serial Print of time
-        
-        vTaskDelay(1/portTICK_PERIOD_MS);                         // Executes Every 1ms
+        Blue.TelemetryPrint(TimeCounter , AngleZ ,Setpoint , DutyC);    // Send data to be plotted on PC 
+
+        vTaskDelay(1/portTICK_PERIOD_MS);                               // Executes Every 1ms
     }
 }
 
 // Get and send data via terminal [Every 20 ms]
 void taskBlueTerminal(void * params){
     while (true){
-        // TerminalMotor();
+        Blue.GetFromTerminal(Setpoint, DutyC);                      // Update values from Terminal             
         vTaskDelay(20/portTICK_PERIOD_MS);                          //Executes every 20ms
     }
 }
@@ -102,11 +93,10 @@ void taskBlueTerminal(void * params){
 void setup() {
     /* Systems Setup */
     Serial.begin(115200);
-    Setup_blue();            // Setup of the Bluetooth Communication with the PC
-    // blue.setup();            // Setup of the Bluetooth Communication with the PC
-    motor.setup();           // Motor and HBridge related Pins Setup
-    // mpu.setup();             // Angle Sensor (MPU6050) setup and calibration
-    // LED_setup();             // LED Setup
+    Blue.setup();               // Setup of the Bluetooth Communication with the PC
+    motor.setup();              // Motor and HBridge related Pins Setup
+    // mpu.setup();                // Angle Sensor (MPU6050) setup and calibration
+    // LED_setup();                // LED Setup
     
     /* RTOS TASKs */
     xTaskCreatePinnedToCore(&taskControl, "ControlSystem", 2048, NULL, 3, NULL, 1);             // Task in core 1
@@ -122,78 +112,7 @@ void loop() {
 
 
 
-
 /*===================================== AUX FUNCTIONS =====================================*/
 void LED_setup(){
 }      
-
-// void TelemetryPrint(uint32_t timestamp, float angle, int setpoint, float dutyc){
-//     // send
-//     Blue.printf("[CUBESAT]: Time: %d | Angle %.2f° | Setpoint: %d | Dc= %.2f\n", timestamp, angle, setpoint, dutyc);
-// }
-
-// /* Bluetooth */
-// void Setup_blue(){
-//     Serial.begin(115200);
-//     Blue.begin("CUBESAT-ESP32");        //Bluetooth device name
-//     Serial.println("The device started, now you can pair it with bluetooth!");
-//     pinMode(INTERNAL_LED, OUTPUT);
-//     digitalWrite(INTERNAL_LED, HIGH);
-// }
-
-
-// void TerminalChat(){
-//     if (Serial.available()) {
-//         Blue.write(Serial.read());
-//     }
-//     if (Blue.available()) {
-//         Serial.write(Blue.read());
-//     }
-// }
-
-// void TerminalMotor(){
-// //   if (Serial.available()) {
-// //     Blue.write(Serial.read());
-// //   }
-//   if (Blue.available()) {
-//     InMessage=(char)Blue.read();
-//     // Serial.write(InMessage);
-//     switch (InMessage) {
-//         /* DutyCycle*/
-//         case '0':
-//             DutyC =0;
-//             break;
-//         case '1':
-//             DutyC =0.1;
-//             break;
-//         case '2':
-//             DutyC =0.2;
-//             break;
-//         case '4':
-//             DutyC =0.4;
-//             break;
-//         case '5':
-//             DutyC =0.5;
-//             break;
-//         case '8':
-//             DutyC =0.8;
-//             break;
-//         /* Setpoint */
-//         case 'F':
-//             Setpoint =90;
-//             break;
-//         case 'A':
-//             Setpoint =-90;
-//             break;
-//         case 'N':
-//             Setpoint =0;
-//             break;
-
-//         default:
-//         break;
-//     }
-
-//   }
-// }
- 
 

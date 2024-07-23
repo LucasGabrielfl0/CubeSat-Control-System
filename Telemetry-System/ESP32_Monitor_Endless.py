@@ -20,9 +20,9 @@ plt.style.use(matplotx.styles.dracula)
 from CSVDatalogger import *     # Logs data in .CSV   
 from PlotSettings import *      # Figure Settings
 from SineTest import *          # Test Mode (plot without Bluetooth)
-from SerialReaderTimeless import *
+from SerialReaderESP import *
+# from SerialReaderTimeless import *
 # from BlueCom import *           # Bluetooth Communicaiton with ESP32
-
 
 TEST_MODE = False
 if TEST_MODE:
@@ -38,14 +38,9 @@ def update_plot(frame, frame_times):
     # Update Values
     time_data, y1_Control, y2_Ref, y3_Response, start_time = ReadSerial(time_data, y1_Control, y2_Ref, y3_Response, start_time)
     
-    # If the Time array doesnt start from zero, sets the start time
-    if time_data[0]>0:
-        start_time= time_data[0]
-        time_data = time_data - start_time
-
 
     frame_times[frame] = time.perf_counter()
-    print("Time: ",time_data[frame],"  Response: ",y3_Response[frame])
+    # print("Time: ",time_data[frame],"  Response: ",y3_Response[frame])
 
     # Updates the lines of the Graph
     line1_Control.set_data(time_data     , y1_Control)

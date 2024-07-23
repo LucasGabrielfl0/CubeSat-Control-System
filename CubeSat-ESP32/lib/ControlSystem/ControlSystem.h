@@ -35,9 +35,10 @@ class ControlSystem {
     float Tf{TF};           // Filter in the Derivative term
     double Ts{TS};         // Sample Time in sec
 
-    float Angle_ref{0};     // Reference Angle
-    float error_c;          // Current error    
-    float error_prev;       // Previous error
+    float Setpoint[2]{0,0};     // Reference Angle
+    float Angle[2]{0,0};
+    float Error[2]{0,0};
+    float DutyC[2]{0,0};
 
     public:
     // Methods:

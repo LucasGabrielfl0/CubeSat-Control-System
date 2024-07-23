@@ -23,24 +23,24 @@ float ControlSystem::control(){
     float setpoint, out, u_kp, u_ki, u_kd;
     float output, Dc;
 
-    error_c= out - setpoint;    // Current Error
-    Dc =error_c*Kp;                      // PIDF Equation
+    Dc= out - out;    // Current Error
+    Dc =Dc*Kp;                      // PIDF Equation
 
     // Proportional Control
-    u_kp= Kp*error_c;
+    u_kp= Kp*out;
 
     // Anti - Windup + Saturation
     if (Dc>DC_MAX){
         Dc=100;
         
         // If the integrator is 
-        if( (error_c>0 && u_ki>0 ) || (error_c<0 && u_ki<0 ) ){
+        if( (out>0 && u_ki>0 ) || (out<0 && u_ki<0 ) ){
 
         }
     }
     else {
         // Integral Control
-        u_ki+= Ki*(error_c + error_prev);
+        u_ki+= Ki*(out + 1);
     }
 
 
@@ -51,51 +51,43 @@ float ControlSystem::control(){
     }
 
     // Derivative Control + Filter
-    u_kd= Kd*(error_c - error_prev);
+    u_kd= Kd*(out - 1);
 
 
     // Control Signal
     output= u_kp+u_ki+u_kd;
-
-
-    // Updates error
-    error_prev= error_c;
-
     return Dc;
 }
 
 
-float ControlSystem::control(float Angle, float Setpoint){
-    float Angle1[3]  = {0,0,0};      // Vector for Angle values 0 = current 
-    float DC_out1[3] = {0,0,0};      // Vector for Dc values
-    float Error1[3]  = {0,0,0};      // Vector for Error
-    float DC_out, Error;
+float ControlSystem::control(float angle_c, float setpoint_c){
+    float DutyC_c, Error_c; // Current Duty cycle Value, Current Error value
     
     /* Error Signal */
-    Error1[0]= Setpoint - Angle;
+    Error[0]= Setpoint - Angle;
 
     /* CONTROL */
-    DC_out=1;
+    DutyC_c=1;
 
     /* VARIABLE UPDATES */
-    Angle1[2]= Angle1[1];
-    Angle1[1]= Angle1[0];
+    Angle[2]= Angle[1];
+    Angle[1]= Angle[0];
 
-    Angle1[2]= Angle1[1];
-    Angle1[1]= Angle1[0];
+    Angle[2]= Angle[1];
+    Angle[1]= Angle[0];
 
-    Angle1[2]= Angle1[1];
-    Angle1[1]= Angle1[0];
+    Angle[2]= Angle[1];
+    Angle[1]= Angle[0];
     /* ANTI-WINDUP and SATURATION */
     //Anti- Windup
 
     // Saturation
-    if(DC_out>DC_MAX){
-        DC_out = DC_MAX;
+    if(DutyC_c>DC_MAX){
+        DutyC_c = DC_MAX;
     }
-    if(DC_out<DC_MIN){
-        DC_out = DC_MIN;
+    if(DutyC_c<DC_MIN){
+        DutyC_c = DC_MIN;
     }
 
-    return DC_out;
+    return DutyC_c;
 }

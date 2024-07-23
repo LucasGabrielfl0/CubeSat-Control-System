@@ -30,16 +30,16 @@
 
 class MotorControl {
     /* Atributes */
-    uint8_t IN1_Pin{IN1_PIN};        //
-    uint8_t IN2_Pin{IN2_PIN};        //
-    uint8_t EN_Pin{ENA_PIN};         // [PWM]
+    uint8_t IN1_Pin{IN1_PIN};        // Direction Pin
+    uint8_t IN2_Pin{IN2_PIN};        // Direction Pin
+    uint8_t EN_Pin{ENA_PIN};         // Velocity Pin [PWM]
 
     public:
     /* Methods */
-    void setFoward();           //
-    void setReverse();          //
-    void shutdown();            //
-    void setup();
+    void setFoward();           // Set Direction
+    void setReverse();          // Set Direction
+    void shutdown();            // Turns off motor
+    void setup();               // Setup Direction/Velocity Pins as output 
     void setPWM(float DutyC);   // Set PWM at 
 
     /* Constructors */

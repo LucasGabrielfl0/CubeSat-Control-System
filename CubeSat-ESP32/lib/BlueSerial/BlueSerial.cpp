@@ -19,8 +19,11 @@ void BlueSerial::setup(){
     begin("CUBESAT-ESP32");                             //Bluetooth device name
     Serial.println("[Bluetooth]: Blue is active");      // Initial message
 
-    pinMode(INTERNAL_LED, OUTPUT);                      // LED
+    pinMode(INTERNAL_LED, OUTPUT);                      // INTERNAL LED
     digitalWrite(INTERNAL_LED, HIGH);
+
+    pinMode(CUBESAT_LED, OUTPUT);                      // Cubesat LED
+    digitalWrite(CUBESAT_LED, HIGH);
 
 }
 

@@ -38,18 +38,21 @@ void MotorControl::shutdown(){
 // Setup of the Hbridge connections with THE ESP32
 void MotorControl::setup(){
     // Hbridge Direction pins Setup, 1 Motor
-    pinMode(IN1_Pin, OUTPUT);                       // 
-    pinMode(IN2_Pin, OUTPUT);                       //
+    pinMode(IN1_Pin, OUTPUT);                       // Pin for Direction control 
+    pinMode(IN2_Pin, OUTPUT);                       // Pin for Direction control
 
     // Board's PWM set up [Velocity control]
     pinMode(EN_Pin, OUTPUT);                        // PWM pin mode as Output
     ledcSetup(PWM_CHANEL,PWM_FREQ,PWM_DC_RES);      // Chanel, Frequency, and resolution
-    ledcAttachPin(EN_Pin, PWM_CHANEL);              // Pin
+    ledcAttachPin(EN_Pin, PWM_CHANEL);              // PWM Pin and Chanel
 }
 
 // Set the PWM according the Dutycycle, [-]: Reverse , [+]: Foward
 void MotorControl::setPWM(float DutyC){
     uint8_t Dc_8b= uint8_t(abs(DutyC)*255);              // Assuming RES = 8bit    
+    if(Dc_8b >= DUTYC_MAX){
+        Dc_8b = DUTYC_MAX;
+    }
     if(DutyC<0){
         setReverse();
         ledcWrite(PWM_CHANEL, Dc_8b);

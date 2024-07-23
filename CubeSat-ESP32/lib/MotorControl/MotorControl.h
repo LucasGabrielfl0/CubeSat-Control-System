@@ -27,6 +27,8 @@
 #define ENA_PIN         15      // Enable PIN for motor 1 [PWM PIN]
 #define ENB_PIN         5       // Enable PIN for motor 2 [PWM PIN]
 
+// Safety
+#define DUTYC_MAX       127     // Dc max = 0.5 (255/2) 
 
 class MotorControl {
     /* Atributes */

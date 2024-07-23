@@ -5,7 +5,7 @@ import time
 #=========================================== COMMUNICATION SETUP ===========================================#
 PC_PORT         =   'COM12'
 BAUD_RATE       =   115200
-SAMPLE_TIME_MS  =   5
+SAMPLE_TIME_MS  =   13
 ser= serial.Serial(PC_PORT, BAUD_RATE)
 
 #=========================================== AUX FUNCTIONS ===========================================#
@@ -33,9 +33,10 @@ def ReadSerial(time_data, y1_control, y2_ref, y3_response,time_c):
     # Keeps reading until finds right msg
     while True:
         ESP32_Data= ser.readline().decode('utf8')           # Read Serial  
-        Data_Array=re.findall(r"[\d.]+", ESP32_Data)    # Get only the numbers from serial data
-        if len(Data_Array) >=3:
-            break
+        if ID_confirm(ESP32_Data):                          # Confirms if its the CAN msg
+            Data_Array=re.findall(r"[\d.]+", ESP32_Data)    # Get only the numbers from serial data
+            if len(Data_Array) >=3:
+                break
 
     print(Data_Array)
 
@@ -45,7 +46,7 @@ def ReadSerial(time_data, y1_control, y2_ref, y3_response,time_c):
     control_c   = float(Data_Array[3])
 
     time_c   = time_c + SAMPLE_TIME_MS
-    # print(time_c)
+    print(time_c)
 
     # Add the current value to the Data array
     time_data       = np.append(time_data       , time_c)

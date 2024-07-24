@@ -4,53 +4,55 @@ clear
 s=tf('s');
 
 %% Experimental x Continuous Model
-% Import Experimental data
+% Import Experimental data [Already processed]
+load("Experimental_data\AngleZ_data.mat");
+load("Experimental_data\DutyC_data.mat");
+load("Experimental_data\time_ms.mat");
+time_sec=time_ms/1000;
+% time_ms=time_ms;
+% Plot
+hold on
+subplot(2,1,1)
+plot(time_sec, angle);       % Response
+grid on
+legend('DutyCycle (Input)')
 
+subplot(2,1,2)
+plot(time_sec, Dc);          % Input (Step from 0 to 0.4)
+grid on
+legend('Angle (Response)')
+
+%% COMPARE MODEL
 % Continuous Model
-J=1;                % Moment of Inertia
-Gp_s=1/(J*s*s);     % Continuous Model transfer function Gp(s)
+y1=angle(400);
+t1=time_sec(400);
+
+k_1 = y1*2/(t1*t1*0.4);     % Since y= (r*k*t^2)/2
+k_tuned =130;           % Tunned value for K
+
+Gp_s_1=k_1/(s*s);           % Continuous Model transfer function Gp(s)
+Gp_s=k_tuned/(s*s);
+
 
 % Graph: -------------------
 hold on
-step(0.2*Gp_s)      % Step at 20% Dutycycle
+plot(time_sec, angle,'b');   % Experimental data
+step(0.4*Gp_s_1,'--m')        % Step at 40% Dutycycle (0.4) [Raw model]
+step(0.4*Gp_s,'g',8)          % Tuned Model
 
-legend('Experimental data', 'Continous Model')
+legend('Experimental data', 'Continous Model (first guess)', 'Cotinuous Model (tunned)')
+grid on
 
 %% Discretize (Bilinear Transform)
+z=tf('z',1e-3);
 Ts=1e-3;                      % Sampling Period
 Gp_z=c2d(Gp_s,Ts,'tustin');   % Discrete Model Gp(z)
+close all
 
 hold on
-step(0.2*Gp_s)          % Step in the continuous model
-step(0.2*Gp_z, '-r')    % Step in the discrete Model
+plot(time_ms, angle,'b');   % Experimental data
+step(0.4*Gp_s)              % Step in the continuous model
+step(0.4*Gp_z, '--r')       % Step in the discrete Model
 legend('Experimental data', 'Continous Model', 'Discrete Model')
 grid on
 
-
-%% Compare Model x System
-% legend('Continous Model', 'Discrete Model')
-% Experimental Data
-% Continuous (s) Model Response
-% Discrete (z) Model Response
-
-% legend('Experimental data', 'Continous Model', 'Discrete Model')
-
-
-
-% y= a*t
-% % (K/s^3) => K(t^2)/2
-% % a=K/2 => K=2*a
-% close all
-% y1=9e5;
-% t1=601;
-% a= y1/(t1*t1);
-% k2=2*a;
-% t=0:1:900;
-% yt=a*t.*t;
-% hold on
-% plot(t,yt, 'g--')
-% step(Cubesat2)
-% grid on
-% legend('Model', 'Plant')
-% disp(k2)
-% % grid on

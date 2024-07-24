@@ -4,24 +4,28 @@ clc
 clear
 
 % Import Experimental data
-Data=readmatrix("Experimental_data\Raw_data\data_1_D40.csv");
+Data=readmatrix("Raw_data\data_1_D20.csv");
 time_ms  = Data(:,1);
-angle = Data(:,2);
+time_sec = time_ms/1000;
+angle = -Data(:,2);
 Dc = Data(:,4);
 
 disp('Data Imported')
 
 %% Trim Data
 % Get the useful part:
-start_index=2651;
-end_index=3162;
+start_index=6;
+end_index=537;
 
-time_ms  = time_ms(start_index:end_index);
-angle = -angle(start_index:end_index);
+time_sec  = time_sec(start_index:end_index);
+angle = angle(start_index:end_index);
 Dc=Dc(start_index:end_index);
 
-disp('Stage 1: csv trash removed')
+plot(time_sec, angle);
+grid on
 
+disp('Stage 1: csv trash removed')
+clear start_index end_index
 %% Remove Offset
 time_ms  = time_ms - time_ms(1);
 angle = angle - angle(1);
@@ -29,15 +33,20 @@ angle = angle - angle(1);
 
 disp('Stage 2: offset removed')
 
-% Plot
-hold on
-plot(time_ms, angle);
-% plot(time_ms, Dc);
+close all
+
+plot(time_sec, angle);
 grid on
+%% Plot
+hold on
+plot(time_sec, angle);
+s=tf('s');
+k_tuned=130;
+Gp_s=k_tuned/(s*s);
+step(0.2*Gp_s,6,'--m')
 
-
-
-
+legend('1','2')
+grid on
 
 
 

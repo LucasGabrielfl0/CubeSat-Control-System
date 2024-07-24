@@ -8,29 +8,64 @@ s=tf('s');      % Continuous
 z=tf('z',1e-3); % Discrete (Tsp= 1ms)
 Ts=1e-3;
 
-%% Gains
-Kp=6.8246;
-Ki=0;
-Kd=11.2146;
-Tf=0.00077877;
-
-%% Plant Model (s)
-% Systems Plant [Model]
+% Plant Model (s)
 Gp_s=1/(s*s);
 
-% S-Domain Controller
-Gc_s= Kp + (Ki/s) + ( Kd*s/(Tf*s +1) );
+%% S-Domain Controller
+% Controller (s)
+% %% PID
+% % Gc_s= Kp + (Ki/s) + ( Kd*s );
+
+% %% PIDF
+% % Gc_s= Kp + (Ki/s) + ( Kd*s/(Tf*s +1) );
+% % Gc_s= Kp + (Ki/s) + ( Kd*s/(Tf*s +1) );
+
+%% PD
+% Kp=0.04;
+% Kd=1.8;
+% Gc_s= Kp + ( Kd*s );
+
+%% PDF:
+Kp=0.026425;
+Kd=1.7377;
+Tf=0.0050352;
+Gc_s=Kp + ( Kd*s/(Tf*s +1) );
+
+
+gain=44;
+Gc_s=Gc_s/gain;
+Gp_s=Gp_s*gain;
 
 % Print info
 CLTF_s=feedback(Gp_s*Gc_s,1);
-stepinfo(CLTF_s)
+DutyC=feedback(Gc_s,Gp_s);
+
+% Display
+Step_Info=stepinfo(CLTF_s,"SettlingTimeThreshold",0.05);
+msg= ['[s-Domain Reponse]: ' ...
+'Ts(5%)= ',num2str(Step_Info.SettlingTime),' sec | Mp% = ',num2str(Step_Info.Overshoot),'%'];
+disp(msg)
 
 % Plot
-step(CLTF_s)
+% Response
+subplot(2,1,1)
+step(90*CLTF_s)
 grid on
+legend('Response')
 
-%% Z-Domain Controller
-% Systems Plant [Model]
+% Control Signal
+subplot(2,1,2)
+step(90*DutyC);
+grid on
+legend('Duty Cycle')
+
+clear Step_Info msg
+
+
+
+
+%% Z-Domain Closed Loop Control
+% Plant Model (z)
 Gp_z=c2d(Gp_s,Ts,'tustin');
 
 % Z-Domain Controller
@@ -38,16 +73,25 @@ Gc_z=c2d(Gc_s,Ts,'tustin');
 
 % Print info
 CLTF_z=feedback(Gp_z*Gc_z,1);
-stepinfo(CLTF_z)
 
+
+% Display
+Step_Info=stepinfo(CLTF_z,"SettlingTimeThreshold",0.05);
+msg= ['[z-Domain Reponse]: ' ...
+'Ts(5%)= ',num2str(Step_Info.SettlingTime),' sec | Mp% = ',num2str(Step_Info.Overshoot),'%'];
+disp(msg)
 % Plot
 step(CLTF_z)
 grid on
 
+clear Step_Info Mp Tset msg
 %% Compare:
 close all
 hold on
-step(CLTF_s,6)          % Step in the continuous model
-step(CLTF_z, '-r',6)    % Step in the discrete Model
-legend('Continous Model', 'Discrete Model')
+step(CLTF_s,6)              % Step in the continuous model
+step(CLTF_z, '--r',6)       % Step in the discrete Model
+
 grid on
+legend('Continous Model', 'Discrete Model')
+
+% Gc_test=Kp+ Ki*Ts*(z+1)/(2*(z-1)) + Kd*2*(z-1)/(Ts*(z+1));

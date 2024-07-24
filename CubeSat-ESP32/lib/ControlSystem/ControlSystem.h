@@ -29,22 +29,20 @@
 class ControlSystem {
     private:
     // Atributes:
-    float Kp{KP};           // Proporcional Gain
-    float Ki{KI};           // Integral Gain
-    float Kd{KD};           // Derivative Gain
-    float Tf{TF};           // Filter in the Derivative term
-    double Ts{TS};         // Sample Time in sec
+    float Kp{KP};               // Proporcional Gain
+    float Ki{KI};               // Integral Gain
+    float Kd{KD};               // Derivative Gain
+    float Tf{TF};               // Filter in the Derivative term
+    double Ts{TS};              // Sample Time in sec
 
-    float Setpoint[2]{0,0};     // Reference Angle
-    float Angle[2]{0,0};
-    float Error[2]{0,0};
-    float DutyC[2]{0,0};
+    float DutyC[3]{0,0,0};      // Control Signal (output)
+    float Error[3]{0,0,0};      // Error Signal (Input)
 
     public:
     // Methods:
     void set_Gains(float Kp, float Ki, float Kd, float Tf);
     float control();
-    float control(float angle, float setpoint);
+    float control(float angle_c, int setpoint_c);
     void OpenLoopStep(float Dc_pwm);                // Apply Step directly into the plant (Open Loop)
     void ClosedLoopStep(float angle);               // Apply Step on the closed Loop (set reference)
 

@@ -19,67 +19,29 @@ ControlSystem::ControlSystem(float _kp, float _ki, float _kd, float _tf, double 
 ControlSystem::ControlSystem(){}
 
 /*================================ METHODS ================================*/
-float ControlSystem::control(){
-    float setpoint, out, u_kp, u_ki, u_kd;
-    float output, Dc;
 
-    Dc= out - out;    // Current Error
-    Dc =Dc*Kp;                      // PIDF Equation
+float ControlSystem::control(float angle_c, int setpoint_c){
+    float DutyC_c{0};
 
-    // Proportional Control
-    u_kp= Kp*out;
-
-    // Anti - Windup + Saturation
-    if (Dc>DC_MAX){
-        Dc=100;
-        
-        // If the integrator is 
-        if( (out>0 && u_ki>0 ) || (out<0 && u_ki<0 ) ){
-
-        }
-    }
-    else {
-        // Integral Control
-        u_ki+= Ki*(out + 1);
-    }
-
-
-    // Control Signal Limits
-    // Lower Limit
-    if (Dc<0){
-        Dc=0;
-    }
-
-    // Derivative Control + Filter
-    u_kd= Kd*(out - 1);
-
-
-    // Control Signal
-    output= u_kp+u_ki+u_kd;
-    return Dc;
-}
-
-
-float ControlSystem::control(float angle_c, float setpoint_c){
-    float DutyC_c, Error_c; // Current Duty cycle Value, Current Error value
-    
     /* Error Signal */
-    Error[0]= Setpoint - Angle;
+    Error[0]= setpoint_c - angle_c;
 
     /* CONTROL */
-    DutyC_c=1;
+    DutyC[0]=Kp*(Error[0]-Error[2]) + Ki*(Ts/2)*(Error[0] + 2*Error[1] + Error[2]) + Kd*(2/Ts)*(Error[0]-2*Error[1] + Error[2]);
+    
 
     /* VARIABLE UPDATES */
-    Angle[2]= Angle[1];
-    Angle[1]= Angle[0];
+    Error[2]= Error[1];
+    Error[1]= Error[0];
 
-    Angle[2]= Angle[1];
-    Angle[1]= Angle[0];
+    DutyC[2]= DutyC[1];
+    DutyC[1]= DutyC[0];
 
-    Angle[2]= Angle[1];
-    Angle[1]= Angle[0];
+    DutyC_c = DutyC[0];
     /* ANTI-WINDUP and SATURATION */
+    
     //Anti- Windup
+
 
     // Saturation
     if(DutyC_c>DC_MAX){

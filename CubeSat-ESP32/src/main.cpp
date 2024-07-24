@@ -72,8 +72,8 @@ void setup() {
     ControlSemaphore = xSemaphoreCreateBinary();    // Creates binary sempahore
 
     /* RTOS TASKS */
-    xTaskCreatePinnedToCore(&taskControl, "ControlSystem", 2048, NULL, 3, NULL, 1);             // Task in core 1
-    xTaskCreatePinnedToCore(&taskTelemetry, "TelemetrySystem", 2048, NULL, 2, NULL,0);          // By default, in core 0
+    // xTaskCreatePinnedToCore(&taskControl, "ControlSystem", 2048, NULL, 3, NULL, 1);             // Task in core 1
+    // xTaskCreatePinnedToCore(&taskTelemetry, "TelemetrySystem", 2048, NULL, 2, NULL,0);          // By default, in core 0
     xTaskCreatePinnedToCore(&taskBlueTerminal, "Terminal", 1024, NULL, 0, NULL,0);              // By default, in core 0
 }
 
@@ -87,9 +87,8 @@ void loop() {
 void taskControl(void * params){
     while (true){
         AngleZ = mpu.readAngleZ();                                      // Reads sensor data
-        // DutyC = PidController.control(AngleZ, float(Setpoint));         // Gets DutyCycle value calculated by the control
+        DutyC = PIDController.control(AngleZ, float(Setpoint));         // Gets DutyCycle value calculated by the control
         motor.setPWM(DutyC);                                            // Sets PWM acordingly to Dc value
-        // Serial.println("FLAG 1");        
 
         xSemaphoreGive(ControlSemaphore);                               // After control is done, allows others
         vTaskDelay(1/portTICK_PERIOD_MS);                               // Task delay of 1 ms
@@ -102,16 +101,16 @@ void taskTelemetry(void * params){
         TimeCounter = millis() - StartTime;                         // TimeStamp
         xSemaphoreTake(ControlSemaphore, portMAX_DELAY);            // Holds task indefinetly until Control task is over
 
-        /* Setpoint Shift*/ // Setpoint goes: =>0 =>90 => 0 => -90 => 0 .... every 6s
-         if(TimeCounter>=6e3 && Setpoint==0){
-            Setpoint = 90*SetpointFlag;            
-        }
-        if(TimeCounter>=12e3) {
-            StartTime = millis();
-            Setpoint = 0;
-            SetpointFlag *= -1;
-        }
-        // Serial.println("FLAG 2");        
+        // /* Setpoint Shift*/ // Setpoint goes: =>0 =>90 => 0 => -90 => 0 .... every 6s
+        //  if(TimeCounter>=6e3 && Setpoint==0){
+        //     Setpoint = 90*SetpointFlag;            
+        // }
+        // if(TimeCounter>=12e3) {
+        //     // StartTime = millis();
+        //     Setpoint = 0;
+        //     SetpointFlag *= -1;
+        // }
+        // // Serial.println("FLAG 2");        
         Blue.TelemetryPrint(TimeCounter , AngleZ ,Setpoint , DutyC);        // Send data to be plotted on PC 
         vTaskDelay(10/portTICK_PERIOD_MS);                                   // Executes Every 10ms
     }
@@ -120,8 +119,13 @@ void taskTelemetry(void * params){
 // Get and send data via terminal [Every 20 ms] [MANUAL MODE: FOR TESTS ONLY]
 void taskBlueTerminal(void * params){
     while (true){
-        Blue.GetFromTerminal(Setpoint, DutyC);                      // Update values from Terminal             
-        vTaskDelay(20/portTICK_PERIOD_MS);                          //Executes every 20ms
+        TimeCounter = millis() - StartTime;                                 // TimeStamp
+        Blue.GetFromTerminal(Setpoint, DutyC);                              // Update values from Terminal             
+        AngleZ = mpu.readAngleZ();                                          // Read Angle
+        motor.setPWM(DutyC);                                                // Sets PWM acordingly to Dc value
+        Blue.TelemetryPrint(TimeCounter , AngleZ ,Setpoint , DutyC);        // Send data to be plotted on PC 
+
+        vTaskDelay(10/portTICK_PERIOD_MS);                                  //Executes every 10ms
     }
 }
 

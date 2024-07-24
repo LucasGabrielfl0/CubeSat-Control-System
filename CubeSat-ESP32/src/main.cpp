@@ -65,7 +65,7 @@ void setup() {
     Serial.begin(115200);
     Blue.setup();               // Setup of the Bluetooth Communication with the PC
     motor.setup();              // Motor and HBridge related Pins Setup
-    // mpu.setup();                // Angle Sensor (MPU6050) setup and calibration
+    mpu.setup();                // Angle Sensor (MPU6050) setup and calibration
     // LED_setup();                // LED Setup
     
     /* Sempahore */
@@ -86,7 +86,7 @@ void loop() {
 /*===================================== TASKS =====================================*/
 void taskControl(void * params){
     while (true){
-        // AngleZ = mpu.readAngleZ();                                      // Reads sensor data
+        AngleZ = mpu.readAngleZ();                                      // Reads sensor data
         // DutyC = PidController.control(AngleZ, float(Setpoint));         // Gets DutyCycle value calculated by the control
         motor.setPWM(DutyC);                                            // Sets PWM acordingly to Dc value
         // Serial.println("FLAG 1");        
@@ -113,7 +113,7 @@ void taskTelemetry(void * params){
         }
         // Serial.println("FLAG 2");        
         Blue.TelemetryPrint(TimeCounter , AngleZ ,Setpoint , DutyC);        // Send data to be plotted on PC 
-        vTaskDelay(1/portTICK_PERIOD_MS);                                   // Executes Every 1ms
+        vTaskDelay(10/portTICK_PERIOD_MS);                                   // Executes Every 10ms
     }
 }
 

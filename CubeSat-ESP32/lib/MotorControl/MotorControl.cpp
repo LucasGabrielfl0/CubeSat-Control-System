@@ -45,6 +45,10 @@ void MotorControl::setup(){
     pinMode(EN_Pin, OUTPUT);                        // PWM pin mode as Output
     ledcSetup(PWM_CHANEL,PWM_FREQ,PWM_DC_RES);      // Chanel, Frequency, and resolution
     ledcAttachPin(EN_Pin, PWM_CHANEL);              // PWM Pin and Chanel
+
+    // Starts as off
+    shutdown();
+    setPWM(0);
 }
 
 // Set the PWM according the Dutycycle, [-]: Reverse , [+]: Foward

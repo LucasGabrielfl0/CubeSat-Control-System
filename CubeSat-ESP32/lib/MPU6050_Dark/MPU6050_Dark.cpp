@@ -212,16 +212,58 @@ void MPU6050::update(){
 
 /*LGFL: CUSTOM */
 void MPU6050::setup(){
-    Wire.begin();                   // Begin I2C comm.
-    begin();
-    upsideDownMounting = true; 		  // if the MPU6050 is mounted upside-down
-    calcOffsets(); 					// gyro and accelero
+  int count{};             //
+  float angle1{0},angle2{0};
+
+  // Wire.begin();                     // Begin I2C comm.
+  byte status = begin();             // Begin MPU sensor
+  calibrate();
+  while(status!=0){}                // stop everything if could not connect to MPU6050
+  upsideDownMounting = false; 		  // if the MPU6050 is mounted upside-down
+    
+
 }
 
+// update + get angle
 float MPU6050::readAngleZ() {
   update();                 // Update Angle value
+  float angle_c = getAngleZ();
+
+  // if (angle_c>=360){
+  //   angle_c-=360;
+  // }
+  // if (angle_c<0){
+  //   angle_c+=360;
+  // }
+
   return getAngleZ();       // Return angle
 }
 
+// Only goes out of the Loop if calibrates
+void MPU6050::calibrate() {
+  float angle1{0},angle2{0};
+
+  calcOffsets();            // calculates Offset
+  angle1= readAngleZ();     // Reads the angle
+  
+  while(true){
+    // 3 sec delay (but keeps the update function running)
+    for(int count=0;count<3e3;count++){
+        update();
+        delay(1);
+      }
+      angle2= readAngleZ();
+      
+      //if the angle changed even tho the cube is still, recalculates offset and tries again  
+      if( abs(angle1) - abs(angle2) > 0.3 ){
+        delay(2e3);
+        calcOffsets();
+        angle1= readAngleZ();
+      }
+      else{
+        break;
+      } 
+  }
+}
 
 

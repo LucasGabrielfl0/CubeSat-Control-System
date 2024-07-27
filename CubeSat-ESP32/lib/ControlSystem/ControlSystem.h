@@ -14,36 +14,40 @@
 
 /*===================================== CONTROL PARAMETERS =====================================*/
 // Control Signal
-#define DC_MAX      0.5     // Maximum Dutycycle value
-#define DC_MIN      0       // Minimum Dutycycle value
+#define DC_MAX          0.5     // Maximum Dutycycle value
+#define DC_MIN         -0.5     // Minimum Dutycycle value
+#define MAX_ERROR       0.4     //
 
 // Gains
-#define KP	        10     	// Proporcional Gain
-#define KI          10     	// Integral Gain
-#define KD          10    	// Derivative Gain
-#define TF          1		// Time constant of the Filter in the derivative gain 
+#define KP	        0.016     	    // Proporcional Gain
+#define KI          0.00     	    // Integral Gain
+#define KD          0.095    	        // Derivative Gain
+#define TF          0.01		    // Time constant of the Filter in the derivative gain 
 
-#define TS          1e-3	// Sampling time in sec
+#define TS          1e-3	        // Sampling time in sec
 
 
 class ControlSystem {
-    private:
+    public:
     // Atributes:
     float Kp{KP};               // Proporcional Gain
     float Ki{KI};               // Integral Gain
     float Kd{KD};               // Derivative Gain
     float Tf{TF};               // Filter in the Derivative term
     double Ts{TS};              // Sample Time in sec
+    bool shutdown{true};       //
 
-    float DutyC[3]{0,0,0};      // Control Signal (output)
-    float Error[3]{0,0,0};      // Error Signal (Input)
+    float uk[3]{0,0,0};         // Control Signal (output)
+    float ek[3]{0,0,0};         // Error Signal (Input)
+
+    float N0{0},N1{0},N2{0};    // Coefficients for transfer functions Numerator
+    float D0{0},D1{0},D2{0};    // Coefficients for tranfer functions Denominator
 
     public:
     // Methods:
     void set_Gains(float Kp, float Ki, float Kd, float Tf);
-    float control();
+    void CalcDiff();                                // Calculate differential equation based on control parameters
     float control(float angle_c, int setpoint_c);
-    void OpenLoopStep(float Dc_pwm);                // Apply Step directly into the plant (Open Loop)
     void ClosedLoopStep(float angle);               // Apply Step on the closed Loop (set reference)
 
 

@@ -55,15 +55,16 @@ void BlueSerial::GetFromTerminal(int &Setpoint, float &DutyC){
         case '2':
             DutyC =0.2;
             break;
+        case '3':
+            DutyC =0.3;
+            break;
         case '4':
             DutyC =0.4;
             break;
         case '5':
             DutyC =0.5;
             break;
-        case '8':
-            DutyC =0.8;
-            break;
+
 
         /* Setpoint */
         case 'F':
@@ -75,6 +76,9 @@ void BlueSerial::GetFromTerminal(int &Setpoint, float &DutyC){
         case 'N':
             Setpoint =0;
             break;
+        case 'S':
+            Setpoint =-300;
+        break;
 
         default:
         break;

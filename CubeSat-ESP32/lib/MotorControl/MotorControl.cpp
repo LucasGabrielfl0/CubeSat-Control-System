@@ -48,6 +48,7 @@ void MotorControl::setup(){
 
     // Starts as off
     shutdown();
+    setFoward();
     setPWM(0);
 }
 
@@ -62,7 +63,7 @@ void MotorControl::setPWM(float DutyC){
         ledcWrite(PWM_CHANEL, Dc_8b);
     } 
     else{
-        setFoward();
+        // setFoward();
         ledcWrite(PWM_CHANEL, Dc_8b);
     }
 }

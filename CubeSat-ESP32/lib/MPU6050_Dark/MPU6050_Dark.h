@@ -94,9 +94,14 @@ class MPU6050{
     void update();
 	
 	/*LGFL: CUSTOM */
+	// Atributes:
+	float AngleZOffset{0};
+
+	// Methods
 	void setup();
 	float readAngleZ();
-	
+	void calibrate();
+
 	// UPSIDE DOWN MOUNTING
 	bool upsideDownMounting = false;
 

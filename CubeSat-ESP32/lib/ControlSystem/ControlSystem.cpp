@@ -16,39 +16,57 @@
 ControlSystem::ControlSystem(float _kp, float _ki, float _kd, float _tf, double _ts)
     :Kp{_kp}, Ki{_ki}, Kd{_kd}, Tf{_tf}, Ts{_ts} {}
 
-ControlSystem::ControlSystem(){}
+ControlSystem::ControlSystem(){
+    // CalcDiff();
+}
 
 /*================================ METHODS ================================*/
+/* DISCRETE CONTROLLER [USING BILINEAR TRANSFORM] */
+void ControlSystem::CalcDiff(){
+    // NUM= N0 + N1*z^-1 + N2*z^-2
+    N0=1;
+    N1=3;
+    N2=1;
+
+    // DEN = 1 + D1*z^-1 + D2*z^-2
+    D1=2;
+    D2=3;
+}
 
 float ControlSystem::control(float angle_c, int setpoint_c){
     float DutyC_c{0};
 
     /* Error Signal */
-    Error[0]= setpoint_c - angle_c;
-
-    /* CONTROL */
-    DutyC[0]=Kp*(Error[0]-Error[2]) + Ki*(Ts/2)*(Error[0] + 2*Error[1] + Error[2]) + Kd*(2/Ts)*(Error[0]-2*Error[1] + Error[2]);
+    ek[0]= setpoint_c - angle_c;
     
+    if(abs(ek[0])<MAX_ERROR){       // Error acceptance
+        ek[0]=0;
+    }
+
+        /* CONTROL */
+    // uk[0]=2.745*ek[0] - 2.745*ek[1] + 0.8182;
+    uk[0]= Kp*ek[0] + Kd*(ek[0]-ek[1])/Ts;
+    // uk[0]= N0*ek[0] + N1*ek[1] + N2*ek[2] - D1*uk[1]- D2*uk[2];    
 
     /* VARIABLE UPDATES */
-    Error[2]= Error[1];
-    Error[1]= Error[0];
+    ek[2]= ek[1];
+    ek[1]= ek[0];
 
-    DutyC[2]= DutyC[1];
-    DutyC[1]= DutyC[0];
+    uk[2]= uk[1];
+    uk[1]= uk[0];
 
-    DutyC_c = DutyC[0];
-    /* ANTI-WINDUP and SATURATION */
+    DutyC_c = uk[0];
     
-    //Anti- Windup
-
-
-    // Saturation
+    /* SATURATION */
     if(DutyC_c>DC_MAX){
         DutyC_c = DC_MAX;
     }
     if(DutyC_c<DC_MIN){
         DutyC_c = DC_MIN;
+    }
+
+    if(shutdown==true){
+        DutyC_c=0;
     }
 
     return DutyC_c;

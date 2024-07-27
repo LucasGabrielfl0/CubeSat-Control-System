@@ -16,29 +16,54 @@ Gp_s=1/(s*s);
 % %% PID
 % % Gc_s= Kp + (Ki/s) + ( Kd*s );
 
-% %% PIDF
-% % Gc_s= Kp + (Ki/s) + ( Kd*s/(Tf*s +1) );
-% % Gc_s= Kp + (Ki/s) + ( Kd*s/(Tf*s +1) );
+% % PIDF
+% Kp=0.015;
+% Kp=2;
+% Ki=0;
+% Kd=1.85;
+% Tf=0.23;
+% Tf=0.3;
+% Tf=0000000.1;
+% Gc_s= Kp + (Ki/s) + ( Kd*s/(Tf*s +1) );
+
 
 %% PD
 % Kp=0.04;
 % Kd=1.8;
+% Tf=0.00001;
+% Kp=1.7499;
+% Kd=9.9985;
 % Gc_s= Kp + ( Kd*s );
+% Gc_s=Kp + ( Kd*s/(Tf*s +1) );
 
 %% PDF:
-Kp=0.026425;
-Kd=1.7377;
-Tf=0.0050352;
+% Kp=0.026425;
+% Kd=1.7377;
+% Tf=0.0050352;
+
+% Kp=0.1;
+% Kd=1.4;
+% % Tf=0.04;
+
+% Kp=0.02;
+% Kp=0.1;
+% Kd=1.66;
+% Kd=1.4;
+% Tf=0.005;
+
+% Kp=1.5959;
+% Kd=9.5485;
+Tf=0.00001;
 Gc_s=Kp + ( Kd*s/(Tf*s +1) );
 
 
-gain=44;
+gain=110;
 Gc_s=Gc_s/gain;
 Gp_s=Gp_s*gain;
 
 % Print info
 CLTF_s=feedback(Gp_s*Gc_s,1);
-DutyC=feedback(Gc_s,Gp_s);
+ControlSignal_s=feedback(Gc_s,Gp_s);
 
 % Display
 Step_Info=stepinfo(CLTF_s,"SettlingTimeThreshold",0.05);
@@ -55,9 +80,9 @@ legend('Response')
 
 % Control Signal
 subplot(2,1,2)
-step(90*DutyC);
+step(90*ControlSignal_s);
 grid on
-legend('Duty Cycle')
+legend('Control Signal')
 
 clear Step_Info msg
 
@@ -73,7 +98,7 @@ Gc_z=c2d(Gc_s,Ts,'tustin');
 
 % Print info
 CLTF_z=feedback(Gp_z*Gc_z,1);
-
+ControlSignal_z=feedback(Gc_z,Gp_z);
 
 % Display
 Step_Info=stepinfo(CLTF_z,"SettlingTimeThreshold",0.05);
@@ -87,11 +112,24 @@ grid on
 clear Step_Info Mp Tset msg
 %% Compare:
 close all
-hold on
-step(CLTF_s,6)              % Step in the continuous model
-step(CLTF_z, '--r',6)       % Step in the discrete Model
 
+% Response
+subplot(2,1,1)
+hold on
+step(90*CLTF_s,6)              % Step in the continuous model
+step(90*CLTF_z, '--r',6)       % Step in the discrete Model
 grid on
-legend('Continous Model', 'Discrete Model')
+legend('Response [s]', 'Response [z]', Location='southeast')
+
+
+
+% Control Signal
+subplot(2,1,2)
+hold on
+step(90*ControlSignal_s)              % Step in the continuous model
+step(90*ControlSignal_z, '--r')       % Step in the discrete Model
+grid on
+legend('Control Signal [s]', 'Control Signal [z]')
+
 
 % Gc_test=Kp+ Ki*Ts*(z+1)/(2*(z-1)) + Kd*2*(z-1)/(Ts*(z+1));

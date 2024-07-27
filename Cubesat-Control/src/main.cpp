@@ -6,7 +6,7 @@
  * Main file for the Cubesat Attitude control system
  ***/
 
-#include <Arduino.h>
+// #include <Arduino.h>
 #include <ControlSystem.h>
 /*===================================== CONTROL PARAMETERS =====================================*/
 //Gains
@@ -22,7 +22,6 @@
 // Communication
 
 // Control systems
-ControlSystem PIDController(KP,KI,KD,TF,TS);
 
 /*================================= GLOBAL VARIABLES =================================*/
 

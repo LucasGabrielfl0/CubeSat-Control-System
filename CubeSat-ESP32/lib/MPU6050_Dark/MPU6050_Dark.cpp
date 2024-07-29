@@ -186,6 +186,11 @@ void MPU6050::fetchData(){
   gyroX = ((float)rawData[4]) / gyro_lsb_to_degsec - gyroXoffset;
   gyroY = ((float)rawData[5]) / gyro_lsb_to_degsec - gyroYoffset;
   gyroZ = ((float)rawData[6]) / gyro_lsb_to_degsec - gyroZoffset;
+
+
+// Drifting filter
+if(gyroZ > 0 && gyroZ < 0.4) {gyroZ = 0;}
+if(gyroZ < 0 && gyroZ > -0.4) {gyroZ = 0;}
 }
 
 void MPU6050::update(){
@@ -212,22 +217,23 @@ void MPU6050::update(){
 
 /*LGFL: CUSTOM */
 void MPU6050::setup(){
-  int count{};             //
-  float angle1{0},angle2{0};
-
-  // Wire.begin();                     // Begin I2C comm.
-  byte status = begin();             // Begin MPU sensor
-  calibrate();
+  byte status = begin();            // Begin MPU sensor
   while(status!=0){}                // stop everything if could not connect to MPU6050
-  upsideDownMounting = false; 		  // if the MPU6050 is mounted upside-down
+  calcOffsets();                    // calculates Offset
+  // calcGyroOffsets();
+  // calibrate();
     
 
 }
 
-// update + get angle
+/* Update + Get Angle Z + Wrap */
 float MPU6050::readAngleZ() {
-  update();                 // Update Angle value
-  float angle_c = getAngleZ();
+  update();                                   // Update Angle value
+  float angle_c = wrap( getAngleZ() ,180);    // RANGE = [180, -180]
+  return angle_c;                             // Return angle
+}
+
+
 
   // if (angle_c>=360){
   //   angle_c-=360;
@@ -235,9 +241,6 @@ float MPU6050::readAngleZ() {
   // if (angle_c<0){
   //   angle_c+=360;
   // }
-
-  return getAngleZ();       // Return angle
-}
 
 // Only goes out of the Loop if calibrates
 void MPU6050::calibrate() {

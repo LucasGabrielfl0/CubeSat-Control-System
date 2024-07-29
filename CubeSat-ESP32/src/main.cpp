@@ -63,15 +63,8 @@ xSemaphoreHandle ControlSemaphore;          // Only activates telemetry after co
 void setup() {
     /* Systems Setup */
     Serial.begin(115200);
-    Wire.begin();
-    // mpu.setup();                // Angle Sensor (MPU6050) setup and calibration
-    mpu.begin();
-    delay(5e3);
-    mpu.upsideDownMounting=false;
-    mpu.calcAccOffsets();    
-    
-    
-    
+    Wire.begin();                     // Begin I2C comm.
+    mpu.setup();                // Angle Sensor (MPU6050) setup and calibration
     Blue.setup();               // Setup of the Bluetooth Communication with the PC
     motor.setup();              // Motor and HBridge related Pins Setup
     // LED_setup();             // LED Setup
@@ -80,7 +73,7 @@ void setup() {
     ControlSemaphore = xSemaphoreCreateBinary();    // Creates binary sempahore
 
     /* RTOS TASKS */
-    xTaskCreatePinnedToCore(&taskControl, "ControlSystem", 2048, NULL, 3, NULL, 1);             // Task in core 1
+    // xTaskCreatePinnedToCore(&taskControl, "ControlSystem", 2048, NULL, 3, NULL, 1);             // Task in core 1
     // xTaskCreatePinnedToCore(&taskTelemetry, "TelemetrySystem", 2048, NULL, 2, NULL,0);          // By default, in core 0
     // xTaskCreatePinnedToCore(&taskBlueTerminal, "Terminal", 2048, NULL, 0, NULL,0);              // By default, in core 0
 }
@@ -88,8 +81,10 @@ void setup() {
 /*===================================== MAIN LOOP =====================================*/
 void loop() {
     // jack shit
-    // mpu.update();       // are you sure?
+    // mpu.update();                   // are you sure?
     AngleZ = mpu.readAngleZ();
+    Serial.println(AngleZ);
+    delay(10);
 }
 
 
@@ -97,14 +92,15 @@ void loop() {
 void taskControl(void * params){
     mpu.calcAccOffsets();                   // Calculates Offset Again (just to make sure)
     delay(1e3);
-    // mpu.calibrate();
 
     while (true){
-        // AngleZ = mpu.readAngleZ();                                      // Reads sensor data
-        // DutyC = PIDController.control(AngleZ, float(Setpoint));         // Gets DutyCycle value calculated by the control
+        AngleZ = mpu.readAngleZ();                                      // Reads sensor data
+        DutyC = PIDController.control(AngleZ, float(Setpoint));         // Gets DutyCycle value calculated by the control
         motor.setPWM(DutyC);                                            // Sets PWM acordingly to Dc value
-        Blue.TelemetryPrint(TimeCounter , AngleZ ,Setpoint , DutyC);        // Send data to be plotted on PC 
-
+        
+        TimeCounter = millis() - StartTime;                             // TimeStamp
+        // Blue.TelemetryPrint(TimeCounter , AngleZ ,Setpoint , DutyC);    // Send data to be plotted on PC 
+        Serial.printf("time: %d,Angle: %.2f , Setpoint: %d, Dc: %.2f",TimeCounter , AngleZ ,Setpoint , DutyC);
         xSemaphoreGive(ControlSemaphore);                               // After control is done, allows others
         vTaskDelay(1/portTICK_PERIOD_MS);                               // Task delay of 1 ms
     }
@@ -113,10 +109,11 @@ void taskControl(void * params){
 // Telemetry data sent to the PC [Ts = 1ms]
 void taskTelemetry(void * params){
     while (true){
-        TimeCounter = millis() - StartTime;                         // TimeStamp
-        xSemaphoreTake(ControlSemaphore, portMAX_DELAY);            // Holds task indefinetly until Control task is over
+        xSemaphoreTake(ControlSemaphore, portMAX_DELAY);                // Holds task indefinetly until Control task is over
+        TimeCounter = millis() - StartTime;                             // TimeStamp
+        Blue.TelemetryPrint(TimeCounter , AngleZ ,Setpoint , DutyC);    // Send data to be plotted on PC 
     
-        vTaskDelay(20/portTICK_PERIOD_MS);                                   // Executes Every 10ms
+        vTaskDelay(10/portTICK_PERIOD_MS);                              // Executes Every 10ms
     }
 }
 

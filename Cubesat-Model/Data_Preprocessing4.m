@@ -14,13 +14,15 @@ angle = Data(:,2);
 n=numel(angle);
 time_sec  = linspace(0,n,n);
 time_sec = reshape(time_sec,670,1);
-% time_sec=time_sec/1000;
+time_sec=time_sec/1000;
 % Dc = Data(:,4);
 
+hold on
 disp('Data Imported')
 plot(time_sec, angle);
-% plot(time_sec2, angle2);
+plot(time_sec2, angle2);
 grid on
+legend('timeless', 'time')
 
 
 % %% Trim Data
@@ -48,37 +50,15 @@ disp('Stage 2: offset removed')
 
 % Plot
 hold on
-plot(time_sec2, angle2,'r');
+% plot(time_sec2, angle2,'r');
 plot(time_sec, angle, 'y');
 % plot(time_ms, Dc);
-grid on
-
 
 
 %% compare
-% close all
-
-k=90;
+k=100;
+% k=1500
 model=tf(k,[1 0 0]);
-step(0.4*model,time_sec2(end),'--b');
-
-
-
-%% TRASH
-% y= a*t
-% % (K/s^3) => K(t^2)/2
-% % a=K/2 => K=2*a
-% close all
-% y1=9e5;
-% t1=601;
-% a= y1/(t1*t1);
-% k2=2*a;
-% t=0:1:900;
-% yt=a*t.*t;
-% hold on
-% plot(t,yt, 'g--')
-% step(Cubesat2)
-% grid on
-% legend('Model', 'Plant')
-% disp(k2)
-% % grid on
+step(0.4*model,0.6,'--b');
+% step(0.4*model,time_sec2(end),'--b');
+grid on

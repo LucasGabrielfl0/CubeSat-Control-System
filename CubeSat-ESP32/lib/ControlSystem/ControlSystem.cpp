@@ -21,7 +21,7 @@ ControlSystem::ControlSystem(){
 }
 
 /*================================ METHODS ================================*/
-/* DISCRETE CONTROLLER [USING BILINEAR TRANSFORM] */
+/* CALC DISCRETE DIFFERENTIAL EQUATION */
 void ControlSystem::CalcDiff(){
     // NUM= N0 + N1*z^-1 + N2*z^-2
     N0=1;
@@ -33,6 +33,7 @@ void ControlSystem::CalcDiff(){
     D2=3;
 }
 
+/* DISCRETE CONTROLLER [USING BILINEAR TRANSFORM] */
 float ControlSystem::control(float angle_c, int setpoint_c){
     float DutyC_c{0};
 
@@ -43,9 +44,9 @@ float ControlSystem::control(float angle_c, int setpoint_c){
         ek[0]=0;
     }
 
-        /* CONTROL */
-    // uk[0]=2.745*ek[0] - 2.745*ek[1] + 0.8182;
-    uk[0]= Kp*ek[0] + Kd*(ek[0]-ek[1])/Ts;
+    /* CONTROL EQUATION */
+    // uk[0]= Kp*ek[0] + Kd*(ek[0]-ek[1])/Ts;
+    // uk[0]= 2.745*ek[0] - 2.745*ek[1] + 0.8182;
     // uk[0]= N0*ek[0] + N1*ek[1] + N2*ek[2] - D1*uk[1]- D2*uk[2];    
 
     /* VARIABLE UPDATES */
@@ -65,7 +66,9 @@ float ControlSystem::control(float angle_c, int setpoint_c){
         DutyC_c = DC_MIN;
     }
 
-    if(shutdown==true){
+ 
+    /* System Shutdown*/
+    if(shutdown == true){
         DutyC_c=0;
     }
 

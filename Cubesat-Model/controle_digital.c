@@ -1,0 +1,156 @@
+/*------------------------------------------------------------------*/
+/* Filename:    controle_digital.c                                  */
+/* Author:      Rafael Neto                                         */
+/* Date:        09.07.2021                                          */
+/* Description: Controle para Conversor Buck                        */
+/*				                		                            */
+/* Status:      Finalizado                                          */
+/*------------------------------------------------------------------*/
+#define S_FUNCTION_NAME controle_digital
+#define S_FUNCTION_LEVEL 2
+
+#include "simstruc.h"
+#include "math.h"
+
+#ifndef MATLAB_MEX_FILE
+#include <brtenv.h>
+#endif
+
+#define U(element) (*uPtrs[element])  /* Pointer to Input Port0 */
+
+/* Define input and output widths  */
+#define NINPUTS  2
+#define NOUTPUTS 2
+
+/* Define number of states  and assign labels*/
+#define DSTATES 2
+
+#define e_1                              x[0]
+#define e_10                             x0[0]
+/*-------------------------------------------*/
+#define u_1         	                 x[1]
+#define u_10                             x0[1]
+/*-------------------------------------------*/
+
+/* Set parameters   */
+#define NPARAMS 3
+#define DEF_PARAM1(S)   ssGetSFcnParam(S, 0)
+#define DEF_PARAM2(S)   ssGetSFcnParam(S, 1)
+#define DEF_PARAM3(S)   ssGetSFcnParam(S, 2)
+
+/*====================*
+ * S-function methods *
+ *====================*/
+
+/* Function: mdlInitializeSizes ======================================== */
+static void mdlInitializeSizes(SimStruct *S) {
+    ssSetNumSFcnParams(S, NPARAMS);  /* Number of expected parameters */
+    if (ssGetNumSFcnParams(S) != ssGetSFcnParamsCount(S)) {
+        return; /* Parameter mismatch will be reported by Simulink */
+    }
+    
+    ssSetNumContStates(S, 0);
+    ssSetNumDiscStates(S, DSTATES);
+    
+    if (!ssSetNumInputPorts(S, 1)) return;
+    ssSetInputPortWidth(S, 0, NINPUTS);
+    ssSetInputPortDirectFeedThrough(S, 0, 1);
+    
+    if (!ssSetNumOutputPorts(S, 1)) return;
+    ssSetOutputPortWidth(S, 0, NOUTPUTS);
+    
+    ssSetNumSampleTimes(S, 1);
+    ssSetNumRWork(S, 0);
+    ssSetNumIWork(S, 0);
+    ssSetNumPWork(S, 0);
+    ssSetNumModes(S, 0);
+    ssSetNumNonsampledZCs(S, 0);
+    
+    /* Take care when specifying exception free code - see sfuntmpl_doc.c */
+    ssSetOptions(S, SS_OPTION_EXCEPTION_FREE_CODE);
+}
+
+/* Function: mdlInitializeSampleTimes ===================================*/
+static void mdlInitializeSampleTimes(SimStruct *S) {
+    ssSetSampleTime(S, 0, INHERITED_SAMPLE_TIME);
+    ssSetOffsetTime(S, 0, 0.0);
+}
+
+#define MDL_INITIALIZE_CONDITIONS
+/* Function: mdlInitializeConditions ====================================*/
+static void mdlInitializeConditions(SimStruct *S) {
+    real_T *x0 = ssGetRealDiscStates(S);
+    
+    e_10           = 0.0;
+    u_10           = 0.0;
+}
+
+/* Function: mdlOutputs =================================================*/
+static void mdlOutputs(SimStruct *S, int_T tid) {
+    real_T Kp 	              = *mxGetPr(DEF_PARAM1(S));
+    real_T Ki                 = *mxGetPr(DEF_PARAM2(S));
+    real_T Ts                 = *mxGetPr(DEF_PARAM3(S));
+             
+    real_T            *y      = ssGetOutputPortRealSignal(S, 0);
+    real_T            *x      = ssGetRealDiscStates(S);
+    InputRealPtrsType uPtrs   = ssGetInputPortRealSignalPtrs(S, 0);
+  
+    /*---------------------------Entradas------------------------------- */
+    real_T   Vo_med;
+    real_T   Vo_ref;
+   
+    /*---------------------------Variávies------------------------------ */
+    real_T   Erro;
+    real_T   Uref;
+    real_T   Acao_Integral;
+    real_T   Acao_Proporcional;
+              
+    /* Assign inputs to local variables   */
+    
+    Vo_med   = U(0);
+    Vo_ref   = U(1);
+         
+    /*-------------------------------------------------------------------*/
+    /*	Controle de tensão de saída do conversor Buck                    */
+    /* ----------------------------------------------------------------- */
+     
+    /*  Cálculo do erro  */
+    Erro = Vo_ref - Vo_med;
+   
+    /*  Cálculo da ação de controle  */
+    //Acao_Integral      = u_1 + Ki*e_1;
+    //Acao_Proporcional  = Kp*Erro;
+    //Uref = Acao_Proporcional + Acao_Integral;
+    
+    Uref= Erro*5.689  - e_1*5.683 + 0.995*u_1;
+    
+
+    /* */
+    //u_1 = Acao_Integral;
+    u_1 = Uref;
+    e_1 = Erro;
+    
+    /*---------------------------Outputs-------------------------------- */
+    y[0] = Uref;
+    y[1] = Erro;
+    
+}
+
+#define MDL_UPDATE
+/* Function: mdlUpdate ====================================================== */
+static void mdlUpdate(SimStruct *S, int_T tid) {
+    real_T            *x       = ssGetRealDiscStates(S);
+    InputRealPtrsType uPtrs    = ssGetInputPortRealSignalPtrs(S, 0);
+    
+}
+
+/* Function: mdlTerminate ===================================================== */
+static void mdlTerminate(SimStruct *S) {
+    UNUSED_ARG(S); /* unused input argument */
+}
+
+#ifdef  MATLAB_MEX_FILE    /* Is this file being compiled as a MEX-file? */
+#include "simulink.c"      /* MEX-file interface mechanism */
+#else
+#include "cg_sfun.h"       /* Code generation registration function */
+#endif

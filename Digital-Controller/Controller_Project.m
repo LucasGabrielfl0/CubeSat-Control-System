@@ -9,38 +9,27 @@ z=tf('z',1e-3); % Discrete (Tsp= 1ms)
 Ts=1e-3;
 
 % Plant Model (s)
-Gp_s=100/(s*s);
+Gp_s=tf(120,[1 0 0]);
 step(0.5*Gp_s,2);
 grid on
+
 %% S-Domain Controller
 % Controller (s)
-%% PD
-% Kp=0.04;
-% Ki=0;
-% Kd=1.8;
-% Tf=0.00001;
 
 %% PDF:
-% Ki=0;
-% Kp=0.0001;
-% Kd=0.013;
-% Tf=0.02;
+% Original Controller
+Kp=0.0001;
+Ki=0;
+Kd=0.013;
+Tf=0.02;
 
-% Kp=0.1;
-% Kd=1.4;
-% Tf=0.04;
-
-%% PIDF:
-% Kp=1;
-Kp=1.2;
-Ki=0.0;
+% [SATURATED] Controller:
+Kp=1.3;
+Ki=0;
 Kd=0.9;
 Tf=0.2;
-Gc_s= Kp + (Ki/s) + ( Kd*s/(Tf*s +1) );
 
-% gain=110/100;
-% Gc_s=Gc_s/gain;
-% Gp_s=Gp_s*gain;
+Gc_s= Kp + ( Kd*s/(Tf*s +1) );
 
 % Print info
 CLTF_s=feedback(Gp_s*Gc_s,1);
@@ -66,9 +55,6 @@ grid on
 legend('Control Signal')
 
 clear Step_Info msg
-
-
-
 
 %% Z-Domain Closed Loop Control
 % Plant Model (z)
@@ -111,6 +97,3 @@ step(90*ControlSignal_s)              % Step in the continuous model
 step(90*ControlSignal_z, '--r')       % Step in the discrete Model
 grid on
 legend('Control Signal [s]', 'Control Signal [z]')
-
-
-% Gc_test=Kp+ Ki*Ts*(z+1)/(2*(z-1)) + Kd*2*(z-1)/(Ts*(z+1));

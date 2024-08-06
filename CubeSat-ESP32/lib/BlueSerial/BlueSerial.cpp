@@ -78,7 +78,10 @@ void BlueSerial::GetFromTerminal(int &Setpoint, float &DutyC){
             break;
         case 'S':
             Setpoint =-300;
-        break;
+            break;
+        case 'G':
+            Setpoint =-400;
+            break;
 
         default:
         break;

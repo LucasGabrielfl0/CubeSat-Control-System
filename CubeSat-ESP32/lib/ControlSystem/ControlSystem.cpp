@@ -46,7 +46,10 @@ float ControlSystem::control(float angle_c, int setpoint_c){
 
     /* CONTROL EQUATION */
     // uk[0]= Kp*ek[0] + Kd*(ek[0]-ek[1])/Ts;
-    // uk[0]= 2.745*ek[0] - 2.745*ek[1] + 0.8182;
+    // uk[0]= (5.683*ek[0] - 5.689*ek[1] + uk[1])/0.995;
+    
+    uk[0]= 0.855*uk[1]+ 7.5*ek[0]  - 6.9*ek[1];
+    
     // uk[0]= N0*ek[0] + N1*ek[1] + N2*ek[2] - D1*uk[1]- D2*uk[2];    
 
     /* VARIABLE UPDATES */

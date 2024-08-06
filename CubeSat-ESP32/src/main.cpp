@@ -29,7 +29,7 @@
 
 
 /*==================================== GLOBAL VARIABLES ====================================*/
-int Setpoint{0};                    // Angle setpoint in Degrees [°]
+int Setpoint{-300};                    // Angle setpoint in Degrees [°]
 float AngleZ{0};                    // Currente Angle value of the cubesat in Degrees [°]
 float DutyC{0};                     // DutyCycle of the PWM sent to the motor
 float Error{0};                     // Error value;
@@ -73,25 +73,24 @@ void setup() {
     ControlSemaphore = xSemaphoreCreateBinary();    // Creates binary sempahore
 
     /* RTOS TASKS */
-    // xTaskCreatePinnedToCore(&taskControl, "ControlSystem", 2048, NULL, 3, NULL, 1);             // Task in core 1
+    xTaskCreatePinnedToCore(&taskControl, "ControlSystem", 2048, NULL, 3, NULL, 1);             // Task in core 1
     // xTaskCreatePinnedToCore(&taskTelemetry, "TelemetrySystem", 2048, NULL, 2, NULL,0);          // By default, in core 0
-    // xTaskCreatePinnedToCore(&taskBlueTerminal, "Terminal", 2048, NULL, 0, NULL,0);              // By default, in core 0
+    xTaskCreatePinnedToCore(&taskBlueTerminal, "Terminal", 2048, NULL, 0, NULL,0);              // By default, in core 0
 }
 
 /*===================================== MAIN LOOP =====================================*/
 void loop() {
     // jack shit
     // mpu.update();                   // are you sure?
-    AngleZ = mpu.readAngleZ();
-    Serial.println(AngleZ);
-    delay(10);
+    // AngleZ = mpu.readAngleZ();
+    // Serial.println(AngleZ);
+    // delay(1);
 }
 
 
 /*===================================== TASKS =====================================*/
 void taskControl(void * params){
     mpu.calcAccOffsets();                   // Calculates Offset Again (just to make sure)
-    delay(1e3);
 
     while (true){
         AngleZ = mpu.readAngleZ();                                      // Reads sensor data
@@ -99,12 +98,33 @@ void taskControl(void * params){
         motor.setPWM(DutyC);                                            // Sets PWM acordingly to Dc value
         
         TimeCounter = millis() - StartTime;                             // TimeStamp
-        // Blue.TelemetryPrint(TimeCounter , AngleZ ,Setpoint , DutyC);    // Send data to be plotted on PC 
-        Serial.printf("time: %d,Angle: %.2f , Setpoint: %d, Dc: %.2f",TimeCounter , AngleZ ,Setpoint , DutyC);
+        Blue.TelemetryPrint(TimeCounter , AngleZ ,Setpoint , DutyC);    // Send data to be plotted on PC 
+        Serial.printf("time: %d,Angle: %.2f , Setpoint: %d, Dc: %.2f\n",TimeCounter , AngleZ ,Setpoint , DutyC);
         xSemaphoreGive(ControlSemaphore);                               // After control is done, allows others
         vTaskDelay(1/portTICK_PERIOD_MS);                               // Task delay of 1 ms
     }
 }
+
+// Get and send data via terminal [Every 20 ms] [MANUAL MODE: FOR TESTS ONLY]
+void taskBlueTerminal(void * params){
+    while (true){
+        xSemaphoreTake(ControlSemaphore, portMAX_DELAY);            // Holds task indefinetly until Control task is over
+        Blue.GetFromTerminal(Setpoint, DutyC);                      // Update values from Terminal             
+        
+        if(Setpoint==-300){
+            PIDController.shutdown=true;
+            mpu.calcGyroOffsets();                   // Calculates Offset Again (just to make sure)
+            Setpoint=0;
+        }
+        
+        if(Setpoint==-400){
+            PIDController.shutdown=false;
+            Setpoint=0;
+        }
+        vTaskDelay(1000/portTICK_PERIOD_MS);                                  //Executes every 1s
+    }
+}
+
 
 // Telemetry data sent to the PC [Ts = 1ms]
 void taskTelemetry(void * params){
@@ -116,23 +136,6 @@ void taskTelemetry(void * params){
         vTaskDelay(10/portTICK_PERIOD_MS);                              // Executes Every 10ms
     }
 }
-
-// Get and send data via terminal [Every 20 ms] [MANUAL MODE: FOR TESTS ONLY]
-void taskBlueTerminal(void * params){
-    xSemaphoreTake(ControlSemaphore, portMAX_DELAY);            // Holds task indefinetly until Control task is over
-
-    while (true){    
-        Blue.GetFromTerminal(Setpoint, DutyC);                              // Update values from Terminal             
-        if(Setpoint==-300){
-            PIDController.shutdown=true;
-        }
-        else{
-            PIDController.shutdown=false;
-        }
-        vTaskDelay(1000/portTICK_PERIOD_MS);                                  //Executes every 1s
-    }
-}
-
 
 
 

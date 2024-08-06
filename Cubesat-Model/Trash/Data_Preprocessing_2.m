@@ -38,15 +38,15 @@ close all
 plot(time_sec, angle);
 grid on
 %% Plot
-hold on
-plot(time_sec, angle);
-s=tf('s');
-k_tuned=130;
-Gp_s=k_tuned/(s*s);
-step(0.2*Gp_s,6,'--m')
-
-legend('1','2')
-grid on
+% hold on
+% plot(time_sec, angle);
+% s=tf('s');
+% k_tuned=130;
+% Gp_s=k_tuned/(s*s);
+% step(0.2*Gp_s,6,'--m')
+% 
+% legend('1','2')
+% grid on
 
 
 

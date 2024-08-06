@@ -189,8 +189,8 @@ void MPU6050::fetchData(){
 
 
 // Drifting filter
-if(gyroZ > 0 && gyroZ < 0.4) {gyroZ = 0;}
-if(gyroZ < 0 && gyroZ > -0.4) {gyroZ = 0;}
+if(gyroZ > 0 && gyroZ < 0.5) {gyroZ = 0;}
+if(gyroZ < 0 && gyroZ > -0.5) {gyroZ = 0;}
 }
 
 void MPU6050::update(){

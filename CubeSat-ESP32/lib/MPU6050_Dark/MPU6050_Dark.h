@@ -103,7 +103,7 @@ class MPU6050{
 	void calibrate();
 
 	// UPSIDE DOWN MOUNTING
-	bool upsideDownMounting = false;
+	bool upsideDownMounting = true;
 
 
   private:
